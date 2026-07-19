@@ -16,6 +16,7 @@ export const useExamStore = defineStore('exam', () => {
   const currentSoalIndex = ref(0)  // Indeks soal yang sedang aktif
   const isSubmitting = ref(false)
   const hasilUjian   = ref(null)   // Data hasil setelah submit & grading selesai
+  const durasi_menit = ref(null)   // Durasi ujian yang ditetapkan admin (menit)
 
   // ─── Getters ─────────────────────────────────────────────────────────
   const currentSoal    = computed(() => soalList.value[currentSoalIndex.value] || null)
@@ -141,11 +142,12 @@ export const useExamStore = defineStore('exam', () => {
     currentSoalIndex.value = 0
     isSubmitting.value = false
     hasilUjian.value = null
+    durasi_menit.value = null
   }
 
   return {
     sesi, ujian, soalList, jawabanMap, currentSoalIndex,
-    isSubmitting, hasilUjian,
+    isSubmitting, hasilUjian, durasi_menit,
     currentSoal, totalSoal, sesiId, isExamActive, answeredCount,
     startExam, saveJawaban, submitUjian, pollHasil,
     goToSoal, nextSoal, prevSoal, $reset,

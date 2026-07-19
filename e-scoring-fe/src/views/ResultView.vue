@@ -46,18 +46,14 @@
               <span v-if="authStore.user.kelas">{{ authStore.user.kelas }}</span>
             </div>
 
-            <div class="score-meta">
+            <div class="score-meta" style="justify-content: center; gap: var(--space-4);">
               <div class="meta-chip">
                 <span>Durasi</span>
-                <strong>{{ examStore.ujian?.durasi_menit ?? '—' }} menit</strong>
+                <strong>{{ durasiDisplay }} menit</strong>
               </div>
               <div class="meta-chip">
                 <span>Soal Dijawab</span>
-                <strong>{{ examStore.sesi?.jumlah_soal_dijawab ?? examStore.answeredCount ?? '—' }} / {{ examStore.sesi?.jumlah_soal ?? examStore.totalSoal ?? '—' }}</strong>
-              </div>
-              <div class="meta-chip">
-                <span>Selesai</span>
-                <strong>{{ formatDate(examStore.sesi?.waktu_selesai) }}</strong>
+                <strong>{{ hasil?.jawaban?.filter(j => j.teks_jawaban?.trim() !== '').length ?? '—' }} / {{ hasil?.jawaban?.length ?? '—' }}</strong>
               </div>
             </div>
 
@@ -189,6 +185,7 @@ const graded  = ref(false)
 const pdfTemplate = ref(null)
 let pollTimer = null
 const isDownloading = ref(false)
+const durasiDisplay = ref('—')
 
 const scoreClass = computed(() => {
   const n = hasil.value?.total_nilai ?? 0
@@ -213,6 +210,15 @@ function formatDate(dateStr) {
     day: 'numeric', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
+}
+
+function formatDuration(seconds) {
+  if (seconds == null || isNaN(seconds)) return '—'
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  if (m === 0) return `${s} detik`
+  if (s === 0) return `${m} menit`
+  return `${m} menit ${s} dtk`
 }
 
 async function downloadPDF() {
@@ -269,6 +275,14 @@ onMounted(async () => {
     }
   } catch (err) {
     console.warn('Gagal memuat detail sesi', err)
+  }
+
+  // Baca durasi ujian dari localStorage (disimpan saat mahasiswa mulai ujian)
+  const sesiId = Number(route.params.sesiId)
+  const savedDurasi = localStorage.getItem(`sesi_durasi_${sesiId}`)
+    || (examStore.durasi_menit ? String(examStore.durasi_menit) : null)
+  if (savedDurasi) {
+    durasiDisplay.value = savedDurasi
   }
 
   poll()

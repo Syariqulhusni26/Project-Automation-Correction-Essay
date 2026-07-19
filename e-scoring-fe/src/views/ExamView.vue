@@ -170,10 +170,24 @@ onMounted(async () => {
   try {
     const ujianId = Number(route.params.ujianId)
     const res = await examStore.startExam(ujianId)
+
+    // Baca durasi ujian yang disimpan saat memilih dari dashboard
+    const savedDurasi = localStorage.getItem(`ujian_durasi_${ujianId}`)
+    if (savedDurasi) {
+      examStore.durasi_menit = Number(savedDurasi)
+    }
     
     if (res?.isFinished) {
       router.replace({ name: 'Result', params: { sesiId: res.sesiId } })
       return
+    }
+
+    // Simpan juga per sesiId supaya bisa dibaca dari halaman hasil setelah refresh
+    if (savedDurasi && res?.sisaDetik !== undefined) {
+      const currentSesiId = examStore.sesiId
+      if (currentSesiId) {
+        localStorage.setItem(`sesi_durasi_${currentSesiId}`, savedDurasi)
+      }
     }
 
     // Mulai timer dari sisa detik yang dikembalikan oleh backend

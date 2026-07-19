@@ -83,21 +83,26 @@
             <p v-if="ujian.deskripsi" class="ujian-desc">{{ ujian.deskripsi }}</p>
 
             <!-- CTA Button -->
-            <router-link
-              :to="{ name: 'Exam', params: { ujianId: ujian.id } }"
+            <button
+              v-if="ujian.status_sesi !== 'selesai'"
               :id="`btn-mulai-ujian-${ujian.id}`"
-              class="btn w-full icon-slide"
-              :class="ujian.status_sesi === 'selesai' ? 'btn-secondary' : 'btn-primary'"
+              class="btn w-full icon-slide btn-primary"
+              @click="mulaiUjian(ujian)"
             >
-              <template v-if="ujian.status_sesi === 'selesai'">
-                <History size="15" style="margin-right:6px;" /> Lihat Riwayat
-              </template>
-              <template v-else-if="ujian.status_sesi === 'berlangsung'">
+              <template v-if="ujian.status_sesi === 'berlangsung'">
                 <PlayCircle size="15" style="margin-right:6px;" /> Lanjutkan Ujian
               </template>
               <template v-else>
                 <Rocket size="15" style="margin-right:6px;" /> Mulai Ujian
               </template>
+            </button>
+            <router-link
+              v-else
+              :to="{ name: 'Exam', params: { ujianId: ujian.id } }"
+              :id="`btn-riwayat-${ujian.id}`"
+              class="btn w-full icon-slide btn-secondary"
+            >
+              <History size="15" style="margin-right:6px;" /> Lihat Riwayat
             </router-link>
           </div>
         </div>
@@ -109,6 +114,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import { ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import Loading from '@/components/Loading.vue'
@@ -116,6 +122,7 @@ import StatusBadge from '@/components/StatusBadge.vue'
 import { Hand, Inbox, RefreshCw, Timer, FileText, CalendarDays, History, PlayCircle, Rocket } from 'lucide-vue-next'
 
 const auth     = useAuthStore()
+const router   = useRouter()
 const ujianList = ref([])
 const loading   = ref(false)
 const error     = ref('')
@@ -137,6 +144,14 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('id-ID', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
+}
+
+function mulaiUjian(ujian) {
+  // Simpan durasi ujian ke localStorage agar bisa dibaca di halaman hasil
+  if (ujian.durasi_menit) {
+    localStorage.setItem(`ujian_durasi_${ujian.id}`, ujian.durasi_menit)
+  }
+  router.push({ name: 'Exam', params: { ujianId: ujian.id } })
 }
 
 onMounted(fetchUjian)
