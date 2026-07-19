@@ -1,0 +1,148 @@
+:root {
+  --aes-primary: #7c3aed;
+  --aes-primary-dark: #6d28d9;
+  --aes-primary-darker: #5b21b6;
+  --aes-sidebar-top: #3b0764;
+  --aes-sidebar-bottom: #2e1065;
+  --aes-bg: #f7f5fb;
+
+  /* Permukaan (sidebar, topbar, kartu custom) — terang */
+  --aes-surface: #ffffff;
+  --aes-surface-2: #f6f4fb;
+  --aes-border: #ece8f4;
+  --aes-text: #111827;
+  --aes-text-muted: #6b7280;
+}
+
+[data-bs-theme='dark'] {
+  --aes-bg: #16121f;
+  --aes-surface: #1e1a2b;
+  --aes-surface-2: #251f36;
+  --aes-border: #332c47;
+  --aes-text: #f3f0fa;
+  --aes-text-muted: #a8a1bd;
+}
+
+body {
+  background-color: var(--aes-bg);
+  color: var(--aes-text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Tema utama aplikasi: ungu */
+.btn-primary {
+  --bs-btn-bg: var(--aes-primary);
+  --bs-btn-border-color: var(--aes-primary);
+  --bs-btn-hover-bg: var(--aes-primary-dark);
+  --bs-btn-hover-border-color: var(--aes-primary-dark);
+  --bs-btn-active-bg: var(--aes-primary-darker);
+  --bs-btn-active-border-color: var(--aes-primary-darker);
+  --bs-btn-disabled-bg: var(--aes-primary);
+  --bs-btn-disabled-border-color: var(--aes-primary);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--aes-primary);
+  --bs-btn-border-color: var(--aes-primary);
+  --bs-btn-hover-bg: var(--aes-primary);
+  --bs-btn-hover-border-color: var(--aes-primary);
+  --bs-btn-active-bg: var(--aes-primary-dark);
+  --bs-btn-active-border-color: var(--aes-primary-dark);
+}
+.text-primary {
+  color: var(--aes-primary) !important;
+}
+.badge.text-bg-primary {
+  background-color: var(--aes-primary) !important;
+  color: #fff !important;
+}
+
+/* Warna status ujian konsisten di seluruh aplikasi: draft abu, aktif hijau, selesai biru */
+.badge.status-selesai {
+  background-color: #1889da;
+  color: #fff;
+}
+.border-primary {
+  border-color: var(--aes-primary) !important;
+}
+.spinner-border.text-primary {
+  color: var(--aes-primary) !important;
+}
+.progress-bar {
+  background-color: var(--aes-primary);
+}
+.nav-tabs .nav-link {
+  color: #6b7280;
+}
+.nav-tabs .nav-link.active {
+  color: var(--aes-primary);
+  font-weight: 600;
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--aes-primary);
+  box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.15);
+}
+
+/* Kartu lebih lembut & hidup */
+.card {
+  border-radius: 0.9rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.card.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1.2rem rgba(59, 7, 100, 0.12) !important;
+}
+.card-header {
+  border-top-left-radius: 0.9rem !important;
+  border-top-right-radius: 0.9rem !important;
+}
+
+/* Tombol "Kembali" — pil dengan latar, lebih terlihat dari sekadar teks link */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--aes-surface-2);
+  border: 1px solid var(--aes-border);
+  color: var(--aes-primary-dark);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.btn-back:hover {
+  background: rgba(124, 58, 237, 0.16);
+  color: var(--aes-primary-darker);
+  transform: translateX(-2px);
+}
+
+/* Ikon bulat untuk stat tile */
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+/* Judul halaman konsisten */
+.page-title {
+  font-weight: 700;
+}
+
+/* Padding tabel diperlebar dari bawaan Bootstrap supaya tidak mentok ke tepi */
+.table > :not(caption) > * > * {
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+  padding-left: 1.1rem;
+  padding-right: 1.1rem;
+}
+.table-responsive {
+  border-radius: 0 0 0.9rem 0.9rem;
+}
