@@ -49,7 +49,10 @@
           >
             <!-- Status Badge -->
             <div class="ujian-card-header">
-              <StatusBadge status="success" label="Aktif" />
+              <StatusBadge
+                :status="ujian.status_sesi === 'selesai' ? 'neutral' : (ujian.status_sesi === 'berlangsung' ? 'warning' : 'success')"
+                :label="ujian.status_sesi === 'selesai' ? 'Selesai' : (ujian.status_sesi === 'berlangsung' ? 'Berlangsung' : 'Tersedia')"
+              />
               <span class="text-muted text-xs">{{ ujian.mata_pelajaran?.kode }}</span>
             </div>
 

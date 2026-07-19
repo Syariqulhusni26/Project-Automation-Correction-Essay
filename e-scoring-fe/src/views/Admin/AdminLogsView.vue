@@ -22,7 +22,7 @@
                 class="form-select"
                 style="max-width: 220px;"
                 :value="ujianId"
-                @change="(e) => $router.push({ name: 'AdminLogs', params: { ujianId: e.target.value } }).then(() => window.location.reload())"
+                @change="(e) => $router.push({ name: 'AdminLogs', params: { ujianId: e.target.value } })"
               >
                 <option disabled value="0">Pilih Ujian...</option>
                 <option v-for="u in daftarUjian" :key="u.id" :value="u.id">
@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { laporanApi, ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
@@ -154,7 +154,7 @@ const VIOLATION_TYPES = {
 }
 
 const route   = useRoute()
-const ujianId = Number(route.params.ujianId)
+const ujianId = computed(() => Number(route.params.ujianId))
 
 const loading            = ref(false)
 const loadingDaftarUjian = ref(false)
@@ -188,19 +188,21 @@ const summaryStats = computed(() => {
 async function fetchData() {
   // Selalu muat daftar ujian agar dropdown bisa tampil
   try {
-    const { data } = await ujianApi.getUjianDashboard()
-    daftarUjian.value = data || []
+    if (daftarUjian.value.length === 0) {
+      const { data } = await ujianApi.getUjianList()
+      daftarUjian.value = data || []
+    }
   } catch (err) {
     console.error('Gagal memuat daftar ujian:', err)
   }
 
-  if (ujianId === 0) {
+  if (!ujianId.value || ujianId.value === 0) {
     return
   }
   
   loading.value = true
   try {
-    const { data } = await laporanApi.getLogPelanggaran(ujianId)
+    const { data } = await laporanApi.getLogPelanggaran(ujianId.value)
     logs.value = Array.isArray(data) ? data : []
   } finally {
     loading.value = false
@@ -208,6 +210,10 @@ async function fetchData() {
 }
 
 onMounted(fetchData)
+
+watch(ujianId, (newVal) => {
+  fetchData()
+})
 </script>
 
 <style scoped>

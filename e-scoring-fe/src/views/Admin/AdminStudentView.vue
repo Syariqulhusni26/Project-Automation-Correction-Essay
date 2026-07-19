@@ -149,31 +149,33 @@
           <h2 class="pdf-title">KARTU LOGIN MAHASISWA</h2>
           
           <table class="pdf-info-table">
-            <tr>
-              <td width="140">Nama Mahasiswa</td>
-              <td width="10">:</td>
-              <td><strong>{{ mhs.nama_lengkap }}</strong></td>
-            </tr>
-            <tr>
-              <td>NIM / Username</td>
-              <td>:</td>
-              <td><strong>{{ mhs.nim }}</strong></td>
-            </tr>
-            <tr>
-              <td>Kelas</td>
-              <td>:</td>
-              <td>{{ mhs.kelas || '—' }}</td>
-            </tr>
-            <tr>
-              <td>Password</td>
-              <td>:</td>
-              <td><strong style="font-family: monospace; font-size: 1.1em;">{{ mhs.plain_password || '(Terenkripsi)' }}</strong></td>
-            </tr>
-            <tr>
-              <td>Link Ujian</td>
-              <td>:</td>
-              <td>{{ currentUrl }}</td>
-            </tr>
+            <tbody>
+              <tr>
+                <td width="140">Nama Mahasiswa</td>
+                <td width="10">:</td>
+                <td><strong>{{ mhs.nama_lengkap }}</strong></td>
+              </tr>
+              <tr>
+                <td>NIM / Username</td>
+                <td>:</td>
+                <td><strong>{{ mhs.nim }}</strong></td>
+              </tr>
+              <tr>
+                <td>Kelas</td>
+                <td>:</td>
+                <td>{{ mhs.kelas || '—' }}</td>
+              </tr>
+              <tr>
+                <td>Password</td>
+                <td>:</td>
+                <td><strong style="font-family: monospace; font-size: 1.1em;">{{ mhs.plain_password || '(Terenkripsi)' }}</strong></td>
+              </tr>
+              <tr>
+                <td>Link Ujian</td>
+                <td>:</td>
+                <td>{{ currentUrl }}</td>
+              </tr>
+            </tbody>
           </table>
 
           <div class="pdf-footer">
