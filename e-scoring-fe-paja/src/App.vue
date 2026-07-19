@@ -138,7 +138,7 @@ onMounted(() => {
         <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
         <div v-if="!collapsed">
           <div class="brand-title">SAGE</div>
-          <div class="brand-sub">Jurusan TIK — PNL</div>
+          <div class="brand-sub">Jurusan TIK PNL</div>
         </div>
       </div>
 

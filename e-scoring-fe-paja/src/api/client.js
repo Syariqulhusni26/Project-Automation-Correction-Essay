@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8443/api/v1',
+  // Alamat backend wajib diisi lewat .env (lihat .env.example) — tidak di-hardcode di repo
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 })
 
