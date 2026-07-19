@@ -39,7 +39,7 @@ async function handleLogin() {
           <h1 class="h4 fw-bold mb-1">SAGE</h1>
           <p class="text-secondary small mb-0">Smart Automated Grader for Essay</p>
           <p class="text-secondary small mb-0">
-            Jurusan TIK — Politeknik Negeri Lhokseumawe
+            Jurusan TIK Politeknik Negeri Lhokseumawe
           </p>
         </div>
 
