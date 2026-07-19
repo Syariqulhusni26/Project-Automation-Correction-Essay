@@ -13,7 +13,7 @@
         <!-- ── Loading / Grading State ─────────────────────────────── -->
         <template v-if="!graded">
           <div class="grading-card glass-card">
-            <div class="grading-icon">🤖</div>
+            <Bot class="grading-icon icon-pulse" size="52" style="color: var(--color-primary-400);" />
             <h1 class="grading-title">AI Sedang Menilai Jawaban Anda</h1>
             <p class="text-muted text-sm">
               Mohon tunggu sebentar. Proses penilaian esai dilakukan secara otomatis oleh AI.
@@ -65,15 +65,16 @@
             <div class="score-actions">
               <button
                 id="btn-download-pdf"
-                class="btn btn-secondary"
+                class="btn btn-secondary icon-bounce"
                 @click="downloadPDF"
                 :disabled="isDownloading"
               >
                 <span v-if="isDownloading" class="spinner" style="width:1rem;height:1rem;border-width:2px;margin-right:0.5rem"></span>
-                📄 {{ isDownloading ? 'Memproses PDF...' : 'Download PDF' }}
+                <FileDown v-else size="16" />
+                {{ isDownloading ? 'Memproses PDF...' : 'Download PDF' }}
               </button>
-              <router-link :to="{ name: 'Dashboard' }" class="btn btn-primary">
-                ← Kembali ke Dashboard
+              <router-link :to="{ name: 'Dashboard' }" class="btn btn-primary icon-slide">
+                <Home size="15" style="margin-right:6px;" /> Kembali ke Dashboard
               </router-link>
             </div>
           </div>
@@ -102,7 +103,7 @@
                 </div>
 
                 <div class="ai-reason" v-if="jawaban.alasan_nilai">
-                  <span class="ai-label">🤖 Alasan AI:</span>
+                  <span class="ai-label"><Bot size="14" style="vertical-align: text-bottom; margin-right: 4px;" />Alasan AI:</span>
                   <p>{{ jawaban.alasan_nilai }}</p>
                 </div>
               </div>
@@ -119,46 +120,43 @@
         <KopInstitusi />
         <h2 class="pdf-title">TRANSKRIP NILAI UJIAN ESAI</h2>
         
-        <table class="pdf-info-table" v-if="authStore.user">
-          <tr>
-            <td width="120">Nama Mahasiswa</td>
-            <td width="10">:</td>
-            <td><strong>{{ authStore.user.nama_lengkap || authStore.user.username }}</strong></td>
-          </tr>
-          <tr>
-            <td>NIM</td>
-            <td>:</td>
-            <td>{{ authStore.user.nim }}</td>
-          </tr>
-          <tr>
-            <td>Kelas</td>
-            <td>:</td>
-            <td>{{ authStore.user.kelas || '—' }}</td>
-          </tr>
-          <tr>
-            <td>Judul Ujian</td>
-            <td>:</td>
-            <td>{{ hasil?.ujian_judul }}</td>
-          </tr>
-          <tr>
-            <td>Waktu Selesai</td>
-            <td>:</td>
-            <td>{{ formatDate(examStore.sesi?.waktu_selesai) }}</td>
-          </tr>
-        </table>
-
-        <div class="pdf-score-box">
-          <div class="pdf-score-label">NILAI AKHIR</div>
-          <div class="pdf-score-value">{{ hasil?.total_nilai ?? '—' }} / {{ hasil?.nilai_maksimal }}</div>
+        <div class="pdf-info-section" v-if="authStore.user">
+          <div class="pdf-info-row">
+            <span class="pdf-info-label">Nama Mahasiswa</span>
+            <span class="pdf-info-colon">:</span>
+            <span class="pdf-info-value"><strong>{{ authStore.user.nama_lengkap || authStore.user.username }}</strong></span>
+          </div>
+          <div class="pdf-info-row">
+            <span class="pdf-info-label">NIM</span>
+            <span class="pdf-info-colon">:</span>
+            <span class="pdf-info-value">{{ authStore.user.nim }}</span>
+          </div>
+          <div class="pdf-info-row">
+            <span class="pdf-info-label">Kelas</span>
+            <span class="pdf-info-colon">:</span>
+            <span class="pdf-info-value">{{ authStore.user.kelas || '—' }}</span>
+          </div>
+          <div class="pdf-info-row">
+            <span class="pdf-info-label">Judul Ujian</span>
+            <span class="pdf-info-colon">:</span>
+            <span class="pdf-info-value">{{ hasil?.ujian_judul }}</span>
+          </div>
+          <div class="pdf-info-row">
+            <span class="pdf-info-label">Waktu Selesai</span>
+            <span class="pdf-info-colon">:</span>
+            <span class="pdf-info-value">{{ formatDate(examStore.sesi?.waktu_selesai) }}</span>
+          </div>
+          <div class="pdf-info-row">
+            <span class="pdf-info-label">NILAI AKHIR</span>
+            <span class="pdf-info-colon">:</span>
+            <span class="pdf-info-value"><strong style="font-size: 14pt;">{{ hasil?.total_nilai ?? '—' }} / {{ hasil?.nilai_maksimal }}</strong></span>
+          </div>
         </div>
 
         <h3 class="pdf-subtitle">Detail Jawaban dan Penilaian</h3>
         
         <div v-for="jawaban in hasil?.jawaban" :key="jawaban.nomor_soal" class="pdf-qa-item">
-          <div class="pdf-qa-header">
-            <strong>Soal {{ jawaban.nomor_soal }}</strong>
-            <span style="float:right;">Nilai: <strong>{{ jawaban.nilai ?? '—' }}</strong> / 10</span>
-          </div>
+          <h4 class="pdf-qa-title">Soal {{ jawaban.nomor_soal }} <span style="font-weight: normal; font-size: 11pt;">(Nilai: <strong>{{ jawaban.nilai ?? '—' }}</strong> / 10)</span></h4>
           <div class="pdf-qa-body">
             <p><strong>Pertanyaan:</strong><br/>{{ jawaban.pertanyaan }}</p>
             <p><strong>Jawaban Mahasiswa:</strong><br/>{{ jawaban.teks_jawaban || '(tidak dijawab)' }}</p>
@@ -180,6 +178,7 @@ import { laporanApi, submissionApi }   from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import KopInstitusi from '@/components/KopInstitusi.vue'
 import html2pdf from 'html2pdf.js'
+import { Bot, FileDown, Home } from 'lucide-vue-next'
 
 const route     = useRoute()
 const examStore = useExamStore()
@@ -207,8 +206,10 @@ function getScoreClass(nilai) {
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleString('id-ID', {
+  if (!dateStr || dateStr === 'Invalid Date') return '—'
+  const date = new Date(dateStr)
+  if (isNaN(date)) return '—'
+  return date.toLocaleString('id-ID', {
     day: 'numeric', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
@@ -289,8 +290,8 @@ onBeforeUnmount(() => clearInterval(pollTimer))
 }
 
 .pdf-template {
-  background: white;
-  color: #000;
+  background: white !important;
+  color: #000 !important;
   padding: 10mm;
   font-family: 'Times New Roman', Times, serif;
   width: 210mm; /* A4 width approx */
@@ -298,47 +299,45 @@ onBeforeUnmount(() => clearInterval(pollTimer))
   box-sizing: border-box;
 }
 
+.pdf-template * {
+  color: #000 !important;
+}
+
 .pdf-title {
   text-align: center;
   font-size: 14pt;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   text-decoration: underline;
 }
 
-.pdf-info-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-  font-size: 11pt;
-}
-
-.pdf-info-table td {
-  padding: 4px;
-  vertical-align: top;
-}
-
-.pdf-score-box {
-  border: 2px solid #000;
-  padding: 15px;
-  text-align: center;
+.pdf-info-section {
   margin-bottom: 30px;
-  background-color: #f9f9f9;
-}
-
-.pdf-score-label {
   font-size: 12pt;
-  font-weight: bold;
-  margin-bottom: 5px;
+  line-height: 1.6;
 }
 
-.pdf-score-value {
-  font-size: 24pt;
-  font-weight: bold;
+.pdf-info-row {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.pdf-info-label {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.pdf-info-colon {
+  width: 15px;
+  flex-shrink: 0;
+}
+
+.pdf-info-value {
+  flex-grow: 1;
 }
 
 .pdf-subtitle {
-  font-size: 12pt;
+  font-size: 13pt;
   font-weight: bold;
   margin-bottom: 15px;
   border-bottom: 1px solid #000;
@@ -346,23 +345,21 @@ onBeforeUnmount(() => clearInterval(pollTimer))
 }
 
 .pdf-qa-item {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   page-break-inside: avoid;
 }
 
-.pdf-qa-header {
-  background: #f0f0f0;
-  padding: 8px;
-  border: 1px solid #000;
-  border-bottom: none;
-  font-size: 11pt;
+.pdf-qa-title {
+  font-size: 12pt;
+  font-weight: bold;
+  margin: 0 0 8px 0;
 }
 
 .pdf-qa-body {
-  border: 1px solid #000;
-  padding: 10px;
-  font-size: 10pt;
+  font-size: 11pt;
   line-height: 1.5;
+  padding-left: 10px;
+  border-left: 2px solid #ccc;
 }
 
 .pdf-qa-body p {

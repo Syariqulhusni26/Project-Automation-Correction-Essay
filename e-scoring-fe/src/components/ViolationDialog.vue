@@ -9,7 +9,7 @@
       <div v-if="visible" class="modal-overlay" role="alertdialog" aria-modal="true">
         <div class="modal-content violation-modal">
           <!-- Icon -->
-          <div class="violation-icon">🚨</div>
+          <ShieldAlert class="violation-icon icon-pulse" size="56" style="color: var(--color-danger);" />
 
           <!-- Judul -->
           <h2 class="violation-title">Ujian Dihentikan</h2>
@@ -39,6 +39,7 @@
 <script setup>
 import { computed } from 'vue'
 import StatusBadge from './StatusBadge.vue'
+import { ShieldAlert } from 'lucide-vue-next'
 
 const props = defineProps({
   visible:   { type: Boolean, required: true },
@@ -65,8 +66,9 @@ const violationLabel = computed(() =>
 }
 
 .violation-icon {
-  font-size: 3.5rem;
   margin-bottom: var(--space-4);
+  display: flex;
+  justify-content: center;
 }
 
 .violation-title {

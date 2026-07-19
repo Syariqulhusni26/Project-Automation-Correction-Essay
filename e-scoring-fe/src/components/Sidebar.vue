@@ -11,7 +11,7 @@
   <aside class="sidebar" :class="['sidebar', { 'sidebar--collapsed': collapsed }]">
     <!-- Header Brand -->
     <div class="sidebar-header">
-      <span class="brand-icon">⚡</span>
+      <Zap class="brand-icon icon-pulse" size="22" style="color: var(--color-accent-400); flex-shrink: 0;" />
       <span class="brand-name" v-if="!collapsed">E-Scoring</span>
       <button
         id="btn-toggle-sidebar"
@@ -27,46 +27,17 @@
     <nav class="sidebar-nav">
       <template v-for="item in navItems" :key="item.name">
         <!-- Normal Link -->
+        <!-- Normal Link (for all nav items now) -->
         <router-link
-          v-if="!item.isDropdown"
           :to="item.to"
-          class="nav-item"
+          class="nav-item icon-bounce"
           :class="{ 'nav-item--active': isActive(item) }"
           :title="collapsed ? item.label : ''"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
+          <component :is="item.icon" class="nav-icon" size="20" />
           <span class="nav-label" v-if="!collapsed">{{ item.label }}</span>
+          <span v-if="item.badge && item.badge > 0 && !collapsed" class="nav-badge">{{ item.badge }}</span>
         </router-link>
-
-        <!-- Dropdown / Accordion for Exams (Nilai / Log Pelanggaran) -->
-        <div v-else class="nav-dropdown-wrapper">
-          <div
-            class="nav-item dropdown-toggle"
-            :class="{ 'nav-item--active': isActive(item) }"
-            @click="toggleDropdown(item.name)"
-            :title="collapsed ? item.label : ''"
-          >
-            <span class="nav-icon">{{ item.icon }}</span>
-            <span class="nav-label" v-if="!collapsed">{{ item.label }}</span>
-            <span class="dropdown-chevron" v-if="!collapsed" :class="{ 'dropdown-open': openDropdowns[item.name] }">▼</span>
-          </div>
-
-          <!-- Dropdown List -->
-          <div class="dropdown-menu" v-if="!collapsed && openDropdowns[item.name]">
-            <Loading v-if="loadingExams" message="Memuat..." size="sm" />
-            <div v-else-if="ujianList.length === 0" class="dropdown-empty">Belum ada ujian</div>
-            <router-link
-              v-else
-              v-for="ujian in ujianList"
-              :key="ujian.id"
-              :to="{ name: item.name, params: { ujianId: ujian.id } }"
-              class="dropdown-item"
-              :class="{ 'dropdown-item--active': isSubActive(item.name, ujian.id) }"
-            >
-              {{ ujian.judul }}
-            </router-link>
-          </div>
-        </div>
       </template>
     </nav>
 
@@ -82,15 +53,15 @@
 
       <!-- Token blacklist info -->
       <div class="token-info">
-        <span class="token-label">🔐 Autentikasi</span>
+        <span class="token-label"><Shield size="13" style="display:inline-block;vertical-align:text-bottom;margin-right:4px;" /> Autentikasi</span>
         <span class="token-value">JWT Bearer</span>
       </div>
       <div class="token-info">
-        <span class="token-label">👤 Role</span>
+        <span class="token-label"><User size="13" style="display:inline-block;vertical-align:text-bottom;margin-right:4px;" /> Role</span>
         <span class="token-value">{{ auth.user?.role === 'dosen' ? 'Dosen' : auth.user?.role }}</span>
       </div>
       <div class="token-info" v-if="auth.user?.nip">
-        <span class="token-label">🆔 NIP</span>
+        <span class="token-label"><Hash size="13" style="display:inline-block;vertical-align:text-bottom;margin-right:4px;" /> NIP</span>
         <span class="token-value">{{ auth.user?.nip }}</span>
       </div>
     </div>
@@ -114,36 +85,38 @@
       <!-- Tombol toggle dark/light -->
       <button
         id="btn-toggle-theme"
-        class="icon-btn"
+        class="icon-btn icon-spin"
         :title="themeStore.isDark ? 'Ganti ke Light Mode' : 'Ganti ke Dark Mode'"
         @click="themeStore.toggleTheme()"
         v-if="!collapsed"
       >
-        {{ themeStore.isDark ? '☀️' : '🌙' }}
+        <Sun v-if="themeStore.isDark" size="18" />
+        <Moon v-else size="18" />
       </button>
 
       <!-- Logout -->
       <button
         id="btn-logout"
-        class="icon-btn icon-btn--danger"
+        class="icon-btn icon-btn--danger icon-slide"
         title="Logout"
         @click="handleLogout"
         :disabled="loggingOut"
       >
-        <span v-if="loggingOut">⏳</span>
-        <span v-else>🚪</span>
+        <span v-if="loggingOut" class="spinner" style="width:14px;height:14px;border-width:2px;"></span>
+        <LogOut v-else size="18" />
       </button>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { ujianApi } from '@/services/api'
 import Loading from '@/components/Loading.vue'
+import { Zap, Home, Users, BarChart2, ShieldAlert, Shield, User, Hash, Sun, Moon, LogOut } from 'lucide-vue-next'
 
 const auth       = useAuthStore()
 const themeStore = useThemeStore()
@@ -152,33 +125,22 @@ const collapsed  = ref(false)
 const loggingOut = ref(false)
 const loadingExams = ref(false)
 const ujianList  = ref([])
+const totalLogs = ref(0)
 
 const openDropdowns = reactive({
   AdminScore: false,
   AdminLogs: false
 })
 
-const navItems = [
-  { name: 'AdminDashboard', label: 'Dashboard',       icon: '🏠', to: { name: 'AdminDashboard' } },
-  { name: 'AdminStudent',   label: 'Manajemen User',  icon: '👥', to: { name: 'AdminStudent'   } },
-  { name: 'AdminScore',     label: 'Nilai',           icon: '📊', isDropdown: true },
-  { name: 'AdminLogs',      label: 'Log Pelanggaran', icon: '🚨', isDropdown: true },
-]
+const navItems = computed(() => [
+  { name: 'AdminDashboard', label: 'Dashboard',       icon: shallowRef(Home),        to: { name: 'AdminDashboard' } },
+  { name: 'AdminStudent',   label: 'Manajemen User',  icon: shallowRef(Users),       to: { name: 'AdminStudent'   } },
+  { name: 'AdminScore',     label: 'Nilai',           icon: shallowRef(BarChart2),   to: { name: 'AdminScore', params: { ujianId: 0 } } },
+  { name: 'AdminLogs',      label: 'Log Pelanggaran', icon: shallowRef(ShieldAlert), to: { name: 'AdminLogs', params: { ujianId: 0 } }, badge: totalLogs.value },
+])
 
 const isActive = item => {
-  if (item.isDropdown) return route.name === item.name
   return route.name === item.name || route.name?.startsWith(item.name)
-}
-
-const isSubActive = (routeName, ujianId) => {
-  return route.name === routeName && Number(route.params.ujianId) === Number(ujianId)
-}
-
-function toggleDropdown(name) {
-  if (collapsed.value) {
-    collapsed.value = false // Auto open sidebar if collapsed
-  }
-  openDropdowns[name] = !openDropdowns[name]
 }
 
 const userInitial = computed(() => {
@@ -198,14 +160,18 @@ async function fetchExams() {
   }
 }
 
-onMounted(() => {
-  // Buka dropdown jika rute saat ini ada di dalamnya
-  if (route.name === 'AdminScore') openDropdowns.AdminScore = true
-  if (route.name === 'AdminLogs') openDropdowns.AdminLogs = true
+async function fetchDashboardStats() {
+  try {
+    const res = await ujianApi.getDashboard()
+    totalLogs.value = res.data.total_pelanggaran || 0
+  } catch (err) {
+    // Ignore error
+  }
+}
 
-  // Fetch list ujian untuk dropdown
+onMounted(() => {
   if (auth.user?.role === 'dosen') {
-    fetchExams()
+    fetchDashboardStats()
   }
 })
 
@@ -222,16 +188,21 @@ async function handleLogout() {
 <style scoped>
 .sidebar {
   width: 240px;
-  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   background: var(--color-surface-1);
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   transition: width var(--transition-normal);
   flex-shrink: 0;
+  overflow: hidden;
 }
 
-.sidebar--collapsed { width: 68px; }
+.sidebar--collapsed { 
+  width: 68px; 
+}
 
 /* ── Header ── */
 .sidebar-header {
@@ -279,6 +250,19 @@ async function handleLogout() {
   border-color: var(--color-primary-600);
 }
 
+/* Collapsed Header Overrides */
+.sidebar--collapsed .sidebar-header {
+  justify-content: center;
+  padding: var(--space-4) 0;
+}
+.sidebar--collapsed .brand-icon,
+.sidebar--collapsed .brand-name {
+  display: none;
+}
+.sidebar--collapsed .toggle-btn {
+  margin-left: 0;
+}
+
 /* ── Nav ── */
 .sidebar-nav {
   flex: 1;
@@ -311,6 +295,27 @@ async function handleLogout() {
   background: var(--color-primary-50);
   color: var(--color-primary-600);
   border-left: 4px solid var(--color-primary-500);
+}
+
+/* Collapsed Nav Overrides */
+.sidebar--collapsed .nav-item {
+  justify-content: center;
+  padding: var(--space-3) 0;
+}
+.sidebar--collapsed .nav-item--active {
+  border-left: none; /* Hilangkan garis kiri saat collapsed */
+  background: rgba(59, 130, 246, 0.15); /* Agar background tetap soft di mode dark/light */
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--color-danger);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  line-height: 1;
 }
 
 .dropdown-toggle {
@@ -453,6 +458,16 @@ async function handleLogout() {
   white-space: nowrap;
 }
 
+/* Collapsed Session Overrides */
+.sidebar--collapsed .session-status {
+  justify-content: center;
+  padding: var(--space-3) 0;
+}
+.sidebar--collapsed .session-text,
+.sidebar--collapsed .token-info {
+  display: none;
+}
+
 /* ── Footer ── */
 .sidebar-footer {
   padding: var(--space-3) var(--space-3);
@@ -493,6 +508,16 @@ async function handleLogout() {
 .footer-role {
   font-size: 0.7rem;
   color: var(--color-text-muted);
+}
+
+/* Collapsed Footer Overrides */
+.sidebar--collapsed .sidebar-footer {
+  flex-direction: column;
+  padding: var(--space-3) 0;
+  justify-content: center;
+}
+.sidebar--collapsed .footer-info {
+  display: none;
 }
 
 /* ── Icon Buttons (theme + logout) ── */

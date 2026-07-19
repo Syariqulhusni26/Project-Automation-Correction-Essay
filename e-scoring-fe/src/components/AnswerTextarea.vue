@@ -16,14 +16,19 @@
     ></textarea>
     <!-- Auto-save indicator -->
     <Transition name="fade">
-      <span v-if="saving" class="save-indicator">💾 Menyimpan...</span>
-      <span v-else-if="saved" class="save-indicator save-indicator--done">✅ Tersimpan</span>
+      <span v-if="saving" class="save-indicator">
+        <Loader2 size="12" class="icon-spin" style="display:inline-block;vertical-align:text-bottom;margin-right:3px;" /> Menyimpan...
+      </span>
+      <span v-else-if="saved" class="save-indicator save-indicator--done">
+        <CheckCircle2 size="12" style="display:inline-block;vertical-align:text-bottom;margin-right:3px;" /> Tersimpan
+      </span>
     </Transition>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { Loader2, CheckCircle2 } from 'lucide-vue-next'
 
 const props = defineProps({
   id:          { type: String,  default: 'answer-textarea' },

@@ -4,7 +4,11 @@
     Countdown timer ujian. Berubah warna saat waktu <5 menit.
   -->
   <div class="timer" :class="{ 'timer--warning': timerStore.isWarning, 'timer--expired': timerStore.isExpired }">
-    <div class="timer-icon">⏱</div>
+    <Clock
+      class="timer-icon"
+      :class="timerStore.isWarning ? 'icon-pulse' : ''"
+      size="22"
+    />
     <div class="timer-body">
       <span class="timer-label">Sisa Waktu</span>
       <span class="timer-display">{{ timerStore.formattedTime }}</span>
@@ -14,6 +18,7 @@
 
 <script setup>
 import { useTimerStore } from '@/stores/timer'
+import { Clock } from 'lucide-vue-next'
 const timerStore = useTimerStore()
 </script>
 
@@ -30,7 +35,11 @@ const timerStore = useTimerStore()
 }
 
 .timer-icon {
-  font-size: 1.4rem;
+  color: var(--color-primary-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .timer-body {

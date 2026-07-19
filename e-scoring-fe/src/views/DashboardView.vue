@@ -12,7 +12,8 @@
         <header class="page-header">
           <div>
             <h1 class="page-title">
-              Selamat datang, {{ auth.user?.nama_lengkap || auth.user?.username }} 👋
+              Selamat datang, {{ auth.user?.nama_lengkap || auth.user?.username }}
+              <Hand class="wave-icon icon-bounce" size="24" />
             </h1>
             <p class="page-subtitle">
               {{ auth.user?.kelas }} · NIM: {{ auth.user?.nim }}
@@ -31,13 +32,15 @@
 
         <!-- Empty State -->
         <div v-else-if="ujianList.length === 0" class="empty-state glass-card">
-          <span class="empty-icon">📭</span>
+          <Inbox class="empty-icon text-muted icon-bounce" size="48" />
           <h3>Tidak Ada Ujian Tersedia</h3>
           <p class="text-muted text-sm">
             Belum ada ujian aktif untuk kelas Anda saat ini.
             Silakan hubungi dosen atau refresh halaman ini.
           </p>
-          <button class="btn btn-secondary btn-sm" @click="fetchUjian">🔄 Refresh</button>
+          <button class="btn btn-secondary btn-sm icon-spin" @click="fetchUjian">
+            <RefreshCw size="14" /> Refresh
+          </button>
         </div>
 
         <!-- Exam Cards Grid -->
@@ -63,15 +66,15 @@
             <!-- Meta Info -->
             <div class="ujian-meta">
               <div class="meta-item">
-                <span class="meta-icon">⏱</span>
+                <Timer class="meta-icon" size="15" />
                 <span>{{ ujian.durasi_menit }} menit</span>
               </div>
               <div class="meta-item">
-                <span class="meta-icon">📝</span>
+                <FileText class="meta-icon" size="15" />
                 <span>{{ ujian.jumlah_soal }} soal</span>
               </div>
               <div class="meta-item" v-if="ujian.tanggal_ujian">
-                <span class="meta-icon">📅</span>
+                <CalendarDays class="meta-icon" size="15" />
                 <span>{{ formatDate(ujian.tanggal_ujian) }}</span>
               </div>
             </div>
@@ -83,10 +86,18 @@
             <router-link
               :to="{ name: 'Exam', params: { ujianId: ujian.id } }"
               :id="`btn-mulai-ujian-${ujian.id}`"
-              class="btn w-full"
+              class="btn w-full icon-slide"
               :class="ujian.status_sesi === 'selesai' ? 'btn-secondary' : 'btn-primary'"
             >
-              {{ ujian.status_sesi === 'selesai' ? 'Melihat Riwayat →' : (ujian.status_sesi === 'berlangsung' ? 'Lanjutkan Ujian →' : 'Mulai Ujian →') }}
+              <template v-if="ujian.status_sesi === 'selesai'">
+                <History size="15" style="margin-right:6px;" /> Lihat Riwayat
+              </template>
+              <template v-else-if="ujian.status_sesi === 'berlangsung'">
+                <PlayCircle size="15" style="margin-right:6px;" /> Lanjutkan Ujian
+              </template>
+              <template v-else>
+                <Rocket size="15" style="margin-right:6px;" /> Mulai Ujian
+              </template>
             </router-link>
           </div>
         </div>
@@ -102,6 +113,7 @@ import { ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import Loading from '@/components/Loading.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+import { Hand, Inbox, RefreshCw, Timer, FileText, CalendarDays, History, PlayCircle, Rocket } from 'lucide-vue-next'
 
 const auth     = useAuthStore()
 const ujianList = ref([])
@@ -155,6 +167,14 @@ onMounted(fetchUjian)
 .page-title {
   font-size: 1.6rem;
   font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wave-icon {
+  color: var(--color-accent-400);
+  display: inline-flex;
 }
 
 .page-subtitle {
@@ -210,6 +230,11 @@ onMounted(fetchUjian)
   gap: var(--space-1);
   font-size: 0.82rem;
   color: var(--color-text-secondary);
+}
+
+.meta-icon {
+  color: var(--color-primary-400);
+  flex-shrink: 0;
 }
 
 .ujian-desc {

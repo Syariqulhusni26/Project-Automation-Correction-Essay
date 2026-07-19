@@ -18,17 +18,17 @@
             <div class="header-actions">
               <button
                 id="btn-manage-course"
-                class="btn btn-secondary"
+                class="btn btn-secondary icon-bounce"
                 @click="openCourseModal"
               >
-                📚 Kelola Mata Kuliah
+                <BookOpen size="16" /> Kelola Mata Kuliah
               </button>
               <button
                 id="btn-create-ujian"
-                class="btn btn-primary"
+                class="btn btn-primary icon-pulse"
                 @click="openCreateUjianModal"
               >
-                + Buat Ujian Baru
+                <Plus size="16" /> Buat Ujian Baru
               </button>
             </div>
           </header>
@@ -37,9 +37,11 @@
 
           <template v-else>
             <!-- Stats Cards -->
-            <div class="stats-grid">
-              <div class="stat-card glass-card" v-for="stat in stats" :key="stat.label">
-                <div class="stat-icon">{{ stat.icon }}</div>
+            <div class="stats-grid mb-6">
+              <div class="stat-card glass-card hover-lift" v-for="stat in stats" :key="stat.label">
+                <div class="stat-icon-wrapper" :style="{ background: stat.bgColor }">
+                  <component :is="stat.icon" class="icon-pulse" :size="24" :style="{ color: stat.color }" />
+                </div>
                 <div class="stat-body">
                   <span class="stat-value">{{ stat.value }}</span>
                   <span class="stat-label">{{ stat.label }}</span>
@@ -89,51 +91,53 @@
                           <!-- Aktivasi -->
                           <button
                             :id="`btn-aktivasi-${ujian.id}`"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm icon-bounce"
+                            :class="ujian.status === 'aktif' ? 'btn-warning' : 'btn-success'"
                             @click="aktivasiUjian(ujian.id)"
                             :title="ujian.status === 'aktif' ? 'Selesaikan' : 'Aktifkan'"
                           >
-                            {{ ujian.status === 'aktif' ? '⏹' : '▶' }}
+                            <Square v-if="ujian.status === 'aktif'" size="14" />
+                            <Play v-else size="14" />
                           </button>
                           <!-- Soal -->
                           <router-link
                             :to="{ name: 'AdminQuestion', params: { ujianId: ujian.id } }"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm btn-secondary icon-bounce"
                             title="Kelola Soal"
-                          >📝</router-link>
+                          ><FileText size="14" /></router-link>
                           <!-- Nilai -->
                           <router-link
                             :to="{ name: 'AdminScore', params: { ujianId: ujian.id } }"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm btn-secondary icon-bounce"
                             title="Lihat Nilai"
-                          >📊</router-link>
+                          ><IconBarChart size="14" /></router-link>
                           <!-- Log Pelanggaran -->
                           <router-link
                             :to="{ name: 'AdminLogs', params: { ujianId: ujian.id } }"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm btn-secondary icon-bounce"
                             title="Log Pelanggaran"
-                          >🚨</router-link>
+                          ><ShieldAlert size="14" /></router-link>
                           <!-- Monitor -->
                           <button
                             :id="`btn-monitor-${ujian.id}`"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm btn-secondary icon-bounce"
                             @click="openMonitor(ujian.id)"
                             title="Monitor Live"
-                          >👁</button>
+                          ><Eye size="14" /></button>
                           <!-- Edit -->
                           <button
                             :id="`btn-edit-ujian-${ujian.id}`"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm btn-secondary icon-bounce"
                             @click="openEditUjianModal(ujian)"
                             title="Edit Ujian"
-                          >✏️</button>
+                          ><Pencil size="14" /></button>
                           <!-- Hapus -->
                           <button
                             :id="`btn-delete-ujian-${ujian.id}`"
-                            class="btn btn-sm btn-danger"
+                            class="btn btn-sm btn-danger icon-bounce"
                             @click="hapusUjian(ujian.id, ujian.judul)"
                             title="Hapus Ujian"
-                          >🗑</button>
+                          ><Trash2 size="14" /></button>
                         </div>
                       </td>
                     </tr>
@@ -189,11 +193,11 @@
                   <span class="course-name">{{ course.nama }}</span>
                 </div>
                 <button
-                  class="btn btn-sm btn-danger btn-delete-course"
+                  class="btn btn-sm btn-danger btn-delete-course icon-bounce"
                   @click="hapusCourse(course.id, course.nama)"
                   title="Hapus Mata Kuliah"
                 >
-                  🗑
+                  <Trash2 size="14" />
                 </button>
               </li>
             </ul>
@@ -271,13 +275,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, markRaw } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 import { laporanApi, ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Loading from '@/components/Loading.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+import {
+  BookOpen, Plus, ClipboardList, Rocket, Trophy, GraduationCap,
+  Square, Play, FileText, BarChart2 as IconBarChart, ShieldAlert, Eye, Pencil, Trash2
+} from 'lucide-vue-next'
+
+const themeStore = useThemeStore()
 
 // List kelas target TI-1A s/d TI-4E
 const targetClasses = []
@@ -322,10 +333,11 @@ const statusMap = {
 }
 
 const stats = computed(() => [
-  { icon: '📋', label: 'Total Ujian',     value: ujianList.value.length },
-  { icon: '🚀', label: 'Ujian Aktif',     value: ujianList.value.filter(u => u.status === 'aktif').length },
-  { icon: '🏆', label: 'Sudah Selesai',   value: ujianList.value.filter(u => u.status === 'selesai').length },
-  { icon: '🎓', label: 'Total Mahasiswa', value: dashboardData.value?.total_mahasiswa ?? '—' },
+  { icon: markRaw(ClipboardList), label: 'Total Ujian',     value: ujianList.value.length,                                              color: '#60a5fa', bgColor: 'rgba(96,165,250,0.15)' },
+  { icon: markRaw(Rocket),        label: 'Ujian Aktif',     value: ujianList.value.filter(u => u.status === 'aktif').length,            color: '#34d399', bgColor: 'rgba(52,211,153,0.15)' },
+  { icon: markRaw(Trophy),        label: 'Sudah Selesai',   value: ujianList.value.filter(u => u.status === 'selesai').length,          color: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)' },
+  { icon: markRaw(GraduationCap), label: 'Total Mahasiswa', value: dashboardData.value?.total_mahasiswa_real ?? 0,                      color: '#a78bfa', bgColor: 'rgba(167,139,250,0.15)' },
+  { icon: markRaw(ShieldAlert),   label: 'Log Pelanggaran', value: dashboardData.value?.total_pelanggaran ?? 0,                         color: '#ef4444', bgColor: 'rgba(239,68,68,0.15)' },
 ])
 
 async function fetchData() {
@@ -546,18 +558,18 @@ onMounted(fetchData)
   opacity: 1;
 }
 
-.stat-icon {
-  font-size: 2.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem;
-  border-radius: var(--radius-sm);
+.stat-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: transform 0.3s ease;
 }
 
-.stat-card:hover .stat-icon {
+.stat-card:hover .stat-icon-wrapper {
   transform: scale(1.1) rotate(5deg);
 }
 
@@ -594,7 +606,45 @@ onMounted(fetchData)
   border-bottom: 1px solid var(--color-border);
 }
 
-.section-title { font-size: 1rem; font-weight: 700; }
+/* ── Stats Grid ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.stat-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
 
 .action-btns {
   display: flex;

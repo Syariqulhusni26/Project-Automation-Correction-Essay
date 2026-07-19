@@ -13,7 +13,9 @@
           <!-- Header -->
           <header class="section-header">
             <div>
-              <router-link :to="{ name: 'AdminDashboard' }" class="back-link">← Kembali ke Dashboard</router-link>
+              <router-link :to="{ name: 'AdminDashboard' }" class="back-link icon-slide">
+                <ChevronLeft size="16" /> Kembali ke Dashboard
+              </router-link>
               <h1 class="page-title">Log Pelanggaran</h1>
             </div>
             <div class="flex gap-4" v-if="ujianId > 0">
@@ -35,19 +37,27 @@
                 id="select-filter-tipe"
                 v-model="filterTipe"
                 class="form-select"
-                style="max-width: 240px;"
+                style="max-width: 200px;"
               >
                 <option value="">Semua Tipe</option>
                 <option v-for="(label, val) in VIOLATION_TYPES" :key="val" :value="val">
                   {{ label }}
                 </option>
               </select>
+
+              <!-- Limit -->
+              <select v-model="limit" class="form-select" style="max-width: 150px;">
+                <option :value="10">10 Baris</option>
+                <option :value="20">20 Baris</option>
+                <option :value="50">50 Baris</option>
+                <option :value="10000">Semua</option>
+              </select>
             </div>
           </header>
 
           <!-- Pilih ujian dulu jika akses dari sidebar (ujianId = 0) -->
           <div v-if="ujianId === 0" class="empty-state glass-card">
-            <span class="empty-icon">🚨</span>
+            <ShieldAlert class="empty-icon text-muted icon-bounce" size="48" style="color: var(--color-danger);" />
             <h3>Pilih Ujian untuk Melihat Log Pelanggaran</h3>
             <p class="text-muted text-sm" style="margin-bottom: 1rem;">
               Silakan pilih salah satu ujian dari daftar di bawah ini.
@@ -77,7 +87,9 @@
               <!-- Summary -->
               <div class="stats-grid">
                 <div class="stat-card glass-card" v-for="stat in summaryStats" :key="stat.label">
-                  <div class="stat-icon">{{ stat.icon }}</div>
+                  <div class="stat-icon-wrapper" :style="{ background: stat.bgColor }">
+                    <component :is="stat.icon" :size="24" :style="{ color: stat.color }" />
+                  </div>
                   <div class="stat-body">
                     <span class="stat-value">{{ stat.value }}</span>
                     <span class="stat-label">{{ stat.label }}</span>
@@ -96,6 +108,7 @@
                   <table>
                     <thead>
                       <tr>
+                        <th>No</th>
                         <th>Waktu</th>
                         <th>Mahasiswa</th>
                         <th>NIM</th>
@@ -104,12 +117,16 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-if="filteredLogs.length === 0">
-                        <td colspan="5" class="text-center text-muted" style="padding: 2rem;">
-                          ✅ Tidak ada pelanggaran tercatat untuk ujian ini.
+                      <tr v-if="paginatedLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted" style="padding: 2rem;">
+                          <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <CheckCircle size="18" style="color: var(--color-success);" />
+                            Tidak ada pelanggaran tercatat untuk ujian ini.
+                          </div>
                         </td>
                       </tr>
-                      <tr v-for="(log, idx) in filteredLogs" :key="idx">
+                      <tr v-for="(log, idx) in paginatedLogs" :key="idx">
+                        <td>{{ (currentPage - 1) * limit + idx + 1 }}</td>
                         <td class="text-sm text-muted">
                           {{ new Date(log.timestamp).toLocaleString('id-ID') }}
                         </td>
@@ -126,6 +143,12 @@
                     </tbody>
                   </table>
                 </div>
+                <!-- Pagination Controls -->
+                <div class="pagination" v-if="filteredLogs.length > limit">
+                  <button class="btn btn-sm btn-secondary" :disabled="currentPage === 1" @click="currentPage--">Sebelumnya</button>
+                  <span class="page-info">Halaman {{ currentPage }} dari {{ totalPages }}</span>
+                  <button class="btn btn-sm btn-secondary" :disabled="currentPage >= totalPages" @click="currentPage++">Selanjutnya</button>
+                </div>
               </div>
             </template>
           </template>
@@ -137,13 +160,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, markRaw } from 'vue'
 import { useRoute } from 'vue-router'
 import { laporanApi, ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Loading from '@/components/Loading.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+import { ChevronLeft, ShieldAlert, User, BarChart2, CheckCircle } from 'lucide-vue-next'
 
 // Mapping tipe pelanggaran
 const VIOLATION_TYPES = {
@@ -163,6 +187,9 @@ const daftarUjian        = ref([])
 const logs       = ref([])
 const filterTipe = ref('')
 
+const limit = ref(10)
+const currentPage = ref(1)
+
 const filteredLogs = computed(() =>
   filterTipe.value
     ? logs.value.filter(l => l.tipe === filterTipe.value)
@@ -179,10 +206,22 @@ const summaryStats = computed(() => {
   const worst = [...byType].sort((a, b) => b.count - a.count)[0]
 
   return [
-    { icon: '🚨', label: 'Total Pelanggaran',    value: total },
-    { icon: '👤', label: 'Mahasiswa Melanggar',  value: uniq  },
-    { icon: '📊', label: 'Pelanggaran Terbanyak', value: worst?.count ? `${worst.count}x` : '—' },
+    { icon: markRaw(ShieldAlert), label: 'Total Pelanggaran',    value: total, color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.15)' },
+    { icon: markRaw(User),        label: 'Mahasiswa Melanggar',  value: uniq,  color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.15)' },
+    { icon: markRaw(BarChart2),   label: 'Pelanggaran Terbanyak', value: worst?.count ? `${worst.count}x` : '—', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)' },
   ]
+})
+
+const totalPages = computed(() => Math.ceil(filteredLogs.value.length / limit.value) || 1)
+
+const paginatedLogs = computed(() => {
+  const start = (currentPage.value - 1) * limit.value
+  const end = start + limit.value
+  return filteredLogs.value.slice(start, end)
+})
+
+watch([filterTipe, limit], () => {
+  currentPage.value = 1
 })
 
 async function fetchData() {
@@ -204,6 +243,7 @@ async function fetchData() {
   try {
     const { data } = await laporanApi.getLogPelanggaran(ujianId.value)
     logs.value = Array.isArray(data) ? data : []
+    currentPage.value = 1
   } finally {
     loading.value = false
   }
@@ -211,7 +251,7 @@ async function fetchData() {
 
 onMounted(fetchData)
 
-watch(ujianId, (newVal) => {
+watch(() => route.params.ujianId, () => {
   fetchData()
 })
 </script>
@@ -231,8 +271,22 @@ watch(ujianId, (newVal) => {
   gap: var(--space-4);
 }
 
-.stat-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); }
-.stat-icon { font-size: 1.8rem; }
+.stat-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+
+.stat-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+.stat-card:hover .stat-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+}
+
 .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--color-danger); line-height: 1; }
 .stat-label { font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
@@ -251,4 +305,17 @@ watch(ujianId, (newVal) => {
   padding: var(--space-12);
 }
 .empty-icon { font-size: 3rem; }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.page-info {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
 </style>

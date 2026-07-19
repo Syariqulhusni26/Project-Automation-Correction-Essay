@@ -16,7 +16,7 @@
 
         <!-- Logo SAGE -->
         <div class="login-logo">
-          <span class="logo-icon">⚡</span>
+          <Zap class="logo-icon icon-pulse" size="32" style="color: var(--color-accent-400);" />
           <h1 class="logo-text">SAGE</h1>
         </div>
         <p class="login-subtitle">Smart Automated Grade For Essay</p>
@@ -51,11 +51,12 @@
               />
               <button
                 type="button"
-                class="toggle-password-btn"
+                class="toggle-password-btn icon-bounce"
                 @click="showPassword = !showPassword"
                 :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
               >
-                {{ showPassword ? '🙈' : '👁' }}
+                <EyeOff v-if="showPassword" size="18" />
+                <Eye v-else size="18" />
               </button>
             </div>
           </div>
@@ -63,7 +64,8 @@
           <!-- Error Alert -->
           <Transition name="fade">
             <div v-if="errorMsg" class="error-alert" role="alert">
-              ⚠️ {{ errorMsg }}
+              <AlertTriangle size="15" style="display:inline-block;vertical-align:text-bottom;margin-right:6px;" />
+              {{ errorMsg }}
             </div>
           </Transition>
 
@@ -92,6 +94,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { Zap, Eye, EyeOff, AlertTriangle } from 'lucide-vue-next'
 
 const auth    = useAuthStore()
 const router  = useRouter()

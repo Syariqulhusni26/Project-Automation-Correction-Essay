@@ -22,7 +22,9 @@
       <!-- ── Exam Header Bar ── -->
       <header class="exam-header">
         <div class="exam-header-left">
-          <span class="exam-brand">⚡ SAGE</span>
+          <span class="exam-brand">
+            <Zap class="icon-pulse" size="18" style="vertical-align: text-bottom; margin-right: 4px; color: var(--color-accent-400);" /> SAGE
+          </span>
           <div class="exam-title-block">
             <h1 class="exam-title">{{ examStore.ujian?.judul }}</h1>
             <span class="text-muted text-xs">{{ examStore.ujian?.mata_pelajaran?.nama }}</span>
@@ -60,32 +62,32 @@
           <div class="exam-nav-btns">
             <button
               id="btn-prev-soal"
-              class="btn btn-secondary"
+              class="btn btn-secondary icon-bounce"
               :disabled="examStore.currentSoalIndex === 0"
               @click="goToPrev"
             >
-              ← Sebelumnya
+              <ChevronLeft size="16" /> Sebelumnya
             </button>
 
             <!-- Soal terakhir → tombol Selesai & Kumpulkan -->
             <button
               v-if="examStore.currentSoalIndex === examStore.totalSoal - 1"
               id="btn-finish-ujian"
-              class="btn btn-finish"
+              class="btn btn-finish icon-pulse"
               @click="confirmSubmit = true"
               :disabled="examStore.isSubmitting"
             >
-              ✅ Selesai &amp; Kumpulkan
+              <CheckCircle size="16" /> Selesai &amp; Kumpulkan
             </button>
 
             <!-- Soal bukan terakhir → tombol Selanjutnya -->
             <button
               v-else
               id="btn-next-soal"
-              class="btn btn-secondary"
+              class="btn btn-secondary icon-bounce"
               @click="goToNext"
             >
-              Selanjutnya →
+              Selanjutnya <ChevronRight size="16" />
             </button>
           </div>
         </section>
@@ -138,6 +140,7 @@ import Timer             from '@/components/Timer.vue'
 import QuestionCard      from '@/components/QuestionCard.vue'
 import QuestionNumber    from '@/components/QuestionNumber.vue'
 import ViolationDialog   from '@/components/ViolationDialog.vue'
+import { Zap, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-vue-next'
 
 const route     = useRoute()
 const router    = useRouter()

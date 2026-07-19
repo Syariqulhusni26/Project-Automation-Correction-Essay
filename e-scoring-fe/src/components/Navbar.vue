@@ -8,7 +8,7 @@
     <div class="navbar-inner">
       <!-- Logo & Brand -->
       <router-link :to="brandLink" class="navbar-brand">
-        <span class="brand-icon">⚡</span>
+        <Zap class="brand-icon icon-pulse" size="22" />
         <span class="brand-name">SAGE</span>
       </router-link>
 
@@ -24,12 +24,12 @@
 
         <button
           id="btn-logout"
-          class="btn btn-secondary btn-sm"
+          class="btn btn-secondary btn-sm icon-slide"
           @click="handleLogout"
           :disabled="loggingOut"
         >
-          <span v-if="loggingOut">...</span>
-          <span v-else>Keluar</span>
+          <span v-if="loggingOut" class="spinner" style="width:14px;height:14px;border-width:2px;"></span>
+          <template v-else><LogOut size="15" style="margin-right: 4px;" />Keluar</template>
         </button>
       </div>
     </div>
@@ -39,6 +39,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { Zap, LogOut } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const loggingOut = ref(false)
@@ -91,7 +92,8 @@ async function handleLogout() {
 }
 
 .brand-icon {
-  font-size: 1.4rem;
+  color: var(--color-accent-400);
+  flex-shrink: 0;
 }
 
 .brand-name {

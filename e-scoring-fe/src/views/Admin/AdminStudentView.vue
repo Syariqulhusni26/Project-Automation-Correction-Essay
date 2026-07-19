@@ -17,25 +17,26 @@
               <!-- Export Kartu -->
               <button
                 id="btn-export-kartu"
-                class="btn btn-secondary"
+                class="btn btn-secondary icon-bounce"
                 @click="exportKartu"
                 :disabled="isDownloadingPdf"
               >
-                📄 {{ isDownloadingPdf ? 'Memproses PDF...' : 'Export Kartu Login' }}
-                <span v-if="isDownloadingPdf" class="spinner" style="width:1rem;height:1rem;border-width:2px;margin-left:0.5rem"></span>
+                <span v-if="isDownloadingPdf" class="spinner" style="width:1rem;height:1rem;border-width:2px;margin-right:0.5rem"></span>
+                <CreditCard v-else size="16" />
+                {{ isDownloadingPdf ? 'Memproses PDF...' : 'Export Kartu Login' }}
               </button>
               <!-- Import Excel -->
-              <label id="btn-import-mahasiswa" class="btn btn-secondary" style="cursor:pointer;">
-                📥 Import Excel
+              <label id="btn-import-mahasiswa" class="btn btn-secondary icon-bounce" style="cursor:pointer;">
+                <Upload size="16" /> Import Excel
                 <input type="file" accept=".xlsx,.xls" hidden @change="onImportExcel" />
               </label>
               <!-- Tambah Manual -->
               <button
                 id="btn-add-mahasiswa"
-                class="btn btn-primary"
+                class="btn btn-primary icon-pulse"
                 @click="openCreateModal"
               >
-                + Tambah Mahasiswa
+                <UserPlus size="16" /> Tambah Mahasiswa
               </button>
             </div>
           </header>
@@ -55,12 +56,19 @@
               <option v-for="kelas in kelasList" :key="kelas" :value="kelas">{{ kelas }}</option>
             </select>
             <button
-              class="btn btn-sm btn-secondary"
+              class="btn btn-sm btn-secondary icon-bounce"
               :class="{ 'btn-danger': filterLocked }"
               @click="filterLocked = !filterLocked"
             >
-              🔒 {{ filterLocked ? 'Tampilkan Semua' : 'Tampilkan Terkunci' }}
+              <Lock v-if="!filterLocked" size="14" /> <LockOpen v-else size="14" />
+              {{ filterLocked ? 'Tampilkan Semua' : 'Tampilkan Terkunci' }}
             </button>
+            <select v-model="limit" class="form-select" style="max-width: 150px; margin-left: auto;">
+              <option :value="10">10 Baris</option>
+              <option :value="20">20 Baris</option>
+              <option :value="50">50 Baris</option>
+              <option :value="10000">Semua</option>
+            </select>
           </div>
 
           <Loading v-if="loading" message="Memuat mahasiswa..." />
@@ -69,6 +77,7 @@
             <table>
               <thead>
                 <tr>
+                  <th>No</th>
                   <th>Nama Lengkap</th>
                   <th>NIM (Username)</th>
                   <th>Kelas</th>
@@ -78,16 +87,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="filteredList.length === 0">
-                  <td colspan="6" class="text-center text-muted" style="padding: 2rem;">
+                <tr v-if="paginatedList.length === 0">
+                  <td colspan="7" class="text-center text-muted" style="padding: 2rem;">
                     Tidak ada data mahasiswa.
                   </td>
                 </tr>
-                <tr v-for="mhs in filteredList" :key="mhs.id">
+                <tr v-for="(mhs, idx) in paginatedList" :key="mhs.id">
+                  <td>{{ (currentPage - 1) * limit + idx + 1 }}</td>
                   <td class="font-medium">{{ mhs.nama_lengkap }}</td>
                   <td class="text-muted text-sm">{{ mhs.nim }}</td>
                   <td>{{ mhs.kelas || '—' }}</td>
-                  <td class="font-mono text-sm text-primary-400 font-bold">{{ mhs.plain_password || '🔑 Terenkripsi' }}</td>
+                  <td class="font-mono text-sm text-primary-400 font-bold">
+                    <template v-if="mhs.plain_password">{{ mhs.plain_password }}</template>
+                    <template v-else><Key size="13" style="vertical-align: text-bottom; margin-right: 3px;" />Terenkripsi</template>
+                  </td>
                   <td>
                     <StatusBadge
                       v-if="mhs.is_exam_locked"
@@ -101,41 +114,48 @@
                       <!-- Edit -->
                       <button
                         :id="`btn-edit-${mhs.id}`"
-                        class="btn btn-sm btn-secondary"
+                        class="btn btn-sm btn-secondary icon-bounce"
                         @click="openEditModal(mhs)"
                         title="Edit Mahasiswa"
                       >
-                        ✏️
+                        <Pencil size="14" />
                       </button>
                       <!-- Unlock -->
                       <button
                         v-if="mhs.is_exam_locked"
                         :id="`btn-unlock-${mhs.id}`"
-                        class="btn btn-sm btn-secondary"
+                        class="btn btn-sm btn-secondary icon-bounce"
                         @click="unlockMahasiswa(mhs.id)"
                         title="Buka Kunci Akun"
                       >
-                        🔓 Unlock
+                        <LockOpen size="14" /> Unlock
                       </button>
                       <!-- Hapus -->
                       <button
                         :id="`btn-hapus-${mhs.id}`"
-                        class="btn btn-sm btn-danger"
+                        class="btn btn-sm btn-danger icon-bounce"
                         @click="hapusMahasiswa(mhs.id, mhs.nama_lengkap)"
                         title="Hapus Mahasiswa"
                       >
-                        🗑
+                        <Trash2 size="14" />
                       </button>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
+            <!-- Pagination Controls -->
+            <div class="pagination" v-if="filteredList.length > limit">
+              <button class="btn btn-sm btn-secondary" :disabled="currentPage === 1" @click="currentPage--">Sebelumnya</button>
+              <span class="page-info">Halaman {{ currentPage }} dari {{ totalPages }}</span>
+              <button class="btn btn-sm btn-secondary" :disabled="currentPage >= totalPages" @click="currentPage++">Selanjutnya</button>
+            </div>
           </div>
 
           <!-- Info terkunci -->
           <p v-if="lockedCount > 0" class="text-sm" style="color: var(--color-danger);">
-            ⚠️ {{ lockedCount }} mahasiswa dalam status terkunci akibat pelanggaran.
+            <AlertTriangle size="14" style="vertical-align: text-bottom; margin-right: 4px;" />
+            {{ lockedCount }} mahasiswa dalam status terkunci akibat pelanggaran.
           </p>
         </div>
       </main>
@@ -148,35 +168,33 @@
           <KopInstitusi />
           <h2 class="pdf-title">KARTU LOGIN MAHASISWA</h2>
           
-          <table class="pdf-info-table">
-            <tbody>
-              <tr>
-                <td width="140">Nama Mahasiswa</td>
-                <td width="10">:</td>
-                <td><strong>{{ mhs.nama_lengkap }}</strong></td>
-              </tr>
-              <tr>
-                <td>NIM / Username</td>
-                <td>:</td>
-                <td><strong>{{ mhs.nim }}</strong></td>
-              </tr>
-              <tr>
-                <td>Kelas</td>
-                <td>:</td>
-                <td>{{ mhs.kelas || '—' }}</td>
-              </tr>
-              <tr>
-                <td>Password</td>
-                <td>:</td>
-                <td><strong style="font-family: monospace; font-size: 1.1em;">{{ mhs.plain_password || '(Terenkripsi)' }}</strong></td>
-              </tr>
-              <tr>
-                <td>Link Ujian</td>
-                <td>:</td>
-                <td>{{ currentUrl }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="pdf-info-section">
+            <div class="pdf-info-row">
+              <span class="pdf-info-label">Nama Mahasiswa</span>
+              <span class="pdf-info-colon">:</span>
+              <span class="pdf-info-value"><strong>{{ mhs.nama_lengkap }}</strong></span>
+            </div>
+            <div class="pdf-info-row">
+              <span class="pdf-info-label">NIM / Username</span>
+              <span class="pdf-info-colon">:</span>
+              <span class="pdf-info-value"><strong>{{ mhs.nim }}</strong></span>
+            </div>
+            <div class="pdf-info-row">
+              <span class="pdf-info-label">Kelas</span>
+              <span class="pdf-info-colon">:</span>
+              <span class="pdf-info-value">{{ mhs.kelas || '—' }}</span>
+            </div>
+            <div class="pdf-info-row" style="margin-top: 10px;">
+              <span class="pdf-info-label">Password</span>
+              <span class="pdf-info-colon">:</span>
+              <span class="pdf-info-value"><strong style="font-family: monospace; font-size: 1.1em; background: #eee; padding: 2px 6px; border-radius: 4px;">{{ mhs.plain_password || '(Terenkripsi)' }}</strong></span>
+            </div>
+            <div class="pdf-info-row">
+              <span class="pdf-info-label">Link Ujian</span>
+              <span class="pdf-info-colon">:</span>
+              <span class="pdf-info-value">{{ currentUrl }}</span>
+            </div>
+          </div>
 
           <div class="pdf-footer">
             <p>* Harap simpan kartu ini dengan baik dan rahasiakan password Anda.</p>
@@ -238,7 +256,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import { authApi } from '@/services/api'
 import { useDownload } from '@/composables/useDownload'
 import Navbar from '@/components/Navbar.vue'
@@ -247,6 +265,7 @@ import Loading from '@/components/Loading.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import KopInstitusi from '@/components/KopInstitusi.vue'
 import html2pdf from 'html2pdf.js'
+import { CreditCard, Upload, UserPlus, Lock, LockOpen, Key, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
 
 const { downloadBlob } = useDownload()
 
@@ -256,6 +275,9 @@ const mahasiswaList= ref([])
 const search       = ref('')
 const filterKelas  = ref('')
 const filterLocked = ref(false)
+
+const limit = ref(10)
+const currentPage = ref(1)
 
 const isDownloadingPdf = ref(false)
 const pdfTemplate = ref(null)
@@ -295,6 +317,18 @@ const filteredList = computed(() => {
   return list
 })
 
+const totalPages = computed(() => Math.ceil(filteredList.value.length / limit.value) || 1)
+
+const paginatedList = computed(() => {
+  const start = (currentPage.value - 1) * limit.value
+  const end = start + limit.value
+  return filteredList.value.slice(start, end)
+})
+
+watch([search, filterKelas, filterLocked, limit], () => {
+  currentPage.value = 1
+})
+
 const lockedCount = computed(() => mahasiswaList.value.filter(m => m.is_exam_locked).length)
 
 async function fetchData() {
@@ -302,6 +336,7 @@ async function fetchData() {
   try {
     const { data } = await authApi.getMahasiswaList()
     mahasiswaList.value = data
+    currentPage.value = 1
   } catch (err) {
     alert('Gagal mengambil data mahasiswa: ' + (err.response?.data?.detail || err.message))
   } finally {
@@ -488,12 +523,16 @@ onMounted(fetchData)
 }
 
 .pdf-template {
-  background: white;
-  color: #000;
+  background: white !important;
+  color: #000 !important;
   padding: 10mm;
   font-family: 'Times New Roman', Times, serif;
   width: 210mm;
   box-sizing: border-box;
+}
+
+.pdf-template * {
+  color: #000 !important;
 }
 
 .pdf-card {
@@ -505,20 +544,33 @@ onMounted(fetchData)
   text-align: center;
   font-size: 14pt;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-decoration: underline;
 }
 
-.pdf-info-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 10px;
+.pdf-info-section {
   font-size: 12pt;
+  line-height: 1.6;
+  margin-bottom: 20px;
 }
 
-.pdf-info-table td {
-  padding: 6px;
-  vertical-align: top;
+.pdf-info-row {
+  display: flex;
+  margin-bottom: 6px;
+}
+
+.pdf-info-label {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.pdf-info-colon {
+  width: 15px;
+  flex-shrink: 0;
+}
+
+.pdf-info-value {
+  flex-grow: 1;
 }
 
 .pdf-footer {
@@ -535,5 +587,18 @@ onMounted(fetchData)
   overflow: hidden;
   white-space: nowrap;
   margin: 30px 0;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.page-info {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
 }
 </style>

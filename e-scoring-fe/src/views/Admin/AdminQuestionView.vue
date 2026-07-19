@@ -13,24 +13,24 @@
           <!-- Header -->
           <header class="section-header">
             <div>
-              <router-link :to="{ name: 'AdminDashboard' }" class="back-link">← Kembali</router-link>
+              <router-link :to="{ name: 'AdminDashboard' }" class="back-link icon-slide"><ChevronLeft size="16" /> Kembali</router-link>
               <h1 class="page-title" v-if="ujianDetail">
                 Soal — {{ ujianDetail.judul }}
               </h1>
             </div>
             <div class="flex gap-4">
               <!-- Upload Excel -->
-              <label id="btn-upload-excel" class="btn btn-secondary" style="cursor:pointer;">
-                📥 Import Excel
+              <label id="btn-upload-excel" class="btn btn-secondary icon-bounce" style="cursor:pointer;">
+                <Upload size="16" /> Import Excel
                 <input type="file" accept=".xlsx,.xls" hidden @change="onUploadExcel" />
               </label>
               <!-- Tambah Manual -->
               <button
                 id="btn-add-soal"
-                class="btn btn-primary"
+                class="btn btn-primary icon-pulse"
                 @click="openForm(null)"
               >
-                + Tambah Soal
+                <Plus size="16" /> Tambah Soal
               </button>
             </div>
           </header>
@@ -50,14 +50,14 @@
                   <div class="flex gap-2">
                     <button
                       :id="`btn-edit-soal-${soal.id}`"
-                      class="btn btn-sm btn-secondary"
+                      class="btn btn-sm btn-secondary icon-bounce"
                       @click="openForm(soal)"
-                    >✏️ Edit</button>
+                    ><Pencil size="14" /> Edit</button>
                     <button
                       :id="`btn-delete-soal-${soal.id}`"
-                      class="btn btn-sm btn-danger"
+                      class="btn btn-sm btn-danger icon-bounce"
                       @click="deleteSoal(soal.id)"
-                    >🗑</button>
+                    ><Trash2 size="14" /></button>
                   </div>
                 </div>
                 <p class="soal-question">{{ soal.pertanyaan }}</p>
@@ -73,7 +73,7 @@
               </div>
 
               <div v-if="soalList.length === 0" class="empty-state glass-card">
-                <span>📭</span>
+                <Inbox class="empty-icon text-muted icon-bounce" size="48" />
                 <p class="text-muted text-sm">Belum ada soal. Tambahkan soal atau import dari Excel.</p>
               </div>
             </div>
@@ -126,6 +126,7 @@ import { ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Loading from '@/components/Loading.vue'
+import { ChevronLeft, Upload, Plus, Pencil, Trash2, Inbox } from 'lucide-vue-next'
 
 const route    = useRoute()
 const ujianId  = Number(route.params.ujianId)

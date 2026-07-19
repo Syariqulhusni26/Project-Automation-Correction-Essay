@@ -5,10 +5,12 @@
     Emit 'answer-change' tiap kali teks berubah.
   -->
   <div class="question-card animate-fade-in" :key="soal.id">
-    <!-- Header Soal -->
     <div class="card-header">
       <div class="soal-badge">Soal {{ soal.nomor_urut }}</div>
-      <span class="text-muted text-sm">{{ answeredStatus }}</span>
+      <span class="text-sm" :style="{ color: answeredStatus.color, display: 'flex', alignItems: 'center', gap: '4px' }">
+        <component :is="answeredStatus.icon" size="14" />
+        {{ answeredStatus.text }}
+      </span>
     </div>
 
     <!-- Teks Pertanyaan -->
@@ -37,6 +39,7 @@
 <script setup>
 import { computed } from 'vue'
 import AnswerTextarea from './AnswerTextarea.vue'
+import { CheckCircle2, Circle } from 'lucide-vue-next'
 
 const props = defineProps({
   soal:       { type: Object,  required: true },
@@ -48,9 +51,11 @@ defineEmits(['answer-change'])
 
 const charCount = computed(() => (props.modelValue || '').length)
 
-const answeredStatus = computed(() =>
-  charCount.value > 0 ? '✅ Sudah dijawab' : '⬜ Belum dijawab'
-)
+const answeredStatus = computed(() => ({
+  text: charCount.value > 0 ? 'Sudah dijawab' : 'Belum dijawab',
+  icon: charCount.value > 0 ? CheckCircle2 : Circle,
+  color: charCount.value > 0 ? 'var(--color-success)' : 'var(--color-text-muted)'
+}))
 </script>
 
 <style scoped>

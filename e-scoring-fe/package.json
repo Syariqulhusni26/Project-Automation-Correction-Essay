@@ -11,9 +11,12 @@
   "dependencies": {
     "@vueuse/core": "^10.11.0",
     "axios": "^1.7.2",
+    "chart.js": "^4.5.1",
     "html2pdf.js": "^0.14.0",
+    "lucide-vue-next": "^1.0.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
+    "vue-chartjs": "^5.3.4",
     "vue-router": "^4.3.3"
   },
   "devDependencies": {
