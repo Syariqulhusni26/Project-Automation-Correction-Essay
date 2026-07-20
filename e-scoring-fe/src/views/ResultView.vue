@@ -306,7 +306,7 @@ onBeforeUnmount(() => clearInterval(pollTimer))
 .pdf-template {
   background: white !important;
   color: #000 !important;
-  padding: 10mm;
+  padding: 12mm 14mm;
   font-family: 'Times New Roman', Times, serif;
   width: 210mm; /* A4 width approx */
   min-height: 297mm;
@@ -371,13 +371,35 @@ onBeforeUnmount(() => clearInterval(pollTimer))
 
 .pdf-qa-body {
   font-size: 11pt;
-  line-height: 1.5;
-  padding-left: 10px;
+  line-height: 1.7;
+
   border-left: 2px solid #ccc;
+
+  /* Padding lebih rapi */
+  padding: 4px 16px 3px 16px;
+
+  /* Hitung padding ke dalam lebar elemen */
+  box-sizing: border-box;
+
+  /* Mencegah elemen melebar saat print */
+  width: 100%;
 }
 
 .pdf-qa-body p {
   margin: 0 0 10px 0;
+
+  /* Padding yang kamu inginkan */
+  padding: 4px 4px 3px 3px;
+
+  text-align: justify;
+
+  /* Agar teks tidak keluar ke kanan */
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+
+  box-sizing: border-box;
 }
 
 .pdf-qa-body p:last-child {

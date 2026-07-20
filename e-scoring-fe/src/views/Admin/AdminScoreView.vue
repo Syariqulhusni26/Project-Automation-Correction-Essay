@@ -205,10 +205,35 @@
         <div v-for="jawaban in pdfData?.hasil?.jawaban" :key="jawaban.nomor_soal" class="pdf-qa-item">
           <h4 class="pdf-qa-title">Soal {{ jawaban.nomor_soal }} <span style="font-weight: normal; font-size: 11pt;">(Nilai: <strong>{{ jawaban.nilai ?? '—' }}</strong> / 10)</span></h4>
           <div class="pdf-qa-body">
-            <p><strong>Pertanyaan:</strong><br/>{{ jawaban.pertanyaan }}</p>
-            <p><strong>Jawaban Mahasiswa:</strong><br/>{{ jawaban.teks_jawaban || '(tidak dijawab)' }}</p>
-            <p v-if="jawaban.alasan_nilai"><strong>Alasan Penilaian (AI):</strong><br/>{{ jawaban.alasan_nilai }}</p>
-          </div>
+            <div class="pdf-block">
+                <div class="pdf-label">Pertanyaan:</div>
+                <div class="pdf-text">
+                    {{ jawaban.pertanyaan }}
+                </div>
+            </div>
+
+            <div class="pdf-block">
+                <div class="pdf-label">Jawaban Mahasiswa:</div>
+                <div class="pdf-text">
+                    {{ jawaban.teks_jawaban || '(Tidak dijawab)' }}
+                </div>
+            </div>
+
+            <div
+                v-if="jawaban.alasan_nilai"
+                class="pdf-block"
+            >
+                <div class="pdf-label">
+                    Alasan Penilaian (AI):
+                </div>
+
+                <div class="pdf-text">
+                    {{ jawaban.alasan_nilai }}
+                </div>
+
+            </div>
+
+        </div>
         </div>
       </div>
     </div>
@@ -336,12 +361,14 @@ async function exportExcel() {
 
 async function exportPdf(sesiId, nama) {
   isDownloading.value = true
+
   try {
-    // Ambil detail sesi/hasil dari backend agar pdf bisa di render di frontend
+    // Ambil detail hasil dari backend
     const { data: detailHasil } = await submissionApi.getHasil(sesiId)
-    // Ambil detail tambahan (waktu selesai) dari metadata student list
+
+    // Ambil metadata mahasiswa
     const mhs = nilaiList.value.find(m => m.sesi_id === sesiId)
-    
+
     pdfData.value = {
       nama: mhs?.nama || nama,
       nim: mhs?.nim || '—',
@@ -350,21 +377,72 @@ async function exportPdf(sesiId, nama) {
       hasil: detailHasil
     }
 
+    // Tunggu Vue selesai merender template PDF
     await nextTick()
 
+    const element = pdfTemplate.value
+
     const opt = {
-      margin:       [10, 10, 10, 10],
-      filename:     `Transkrip-Nilai-${nama}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: [10, 10, 10, 10],
+
+      filename: `Transkrip-Nilai-${nama}.pdf`,
+
+      image: {
+        type: 'jpeg',
+        quality: 1
+      },
+
+      html2canvas: {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+
+        // hasil lebih tajam
+        letterRendering: true,
+
+        // background putih
+        backgroundColor: '#ffffff',
+
+        // hindari pengaruh scroll browser
+        scrollX: 0,
+        scrollY: 0,
+
+        // gunakan ukuran asli template
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+      },
+
+      jsPDF: {
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait',
+        compress: true
+      },
+
+      pagebreak: {
+        mode: ['css', 'legacy'],
+        avoid: ['.pdf-qa-item']
+      }
     }
-    await html2pdf().set(opt).from(pdfTemplate.value).save()
+
+    await html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+
   } catch (err) {
-    alert('Gagal mengunduh file PDF: ' + (err.response?.data?.detail || err.message))
+
+    alert(
+      'Gagal mengunduh file PDF: ' +
+      (err.response?.data?.detail || err.message)
+    )
+
   } finally {
+
     isDownloading.value = false
     pdfData.value = null
+
   }
 }
 
@@ -430,19 +508,32 @@ watch(ujianId, (newVal) => {
   position: fixed;
   left: -9999px;
   top: 0;
-  width: 800px;
+
+  width: 210mm;
+  min-height: 297mm;
+
   background: white;
+
+  overflow: hidden;
+
   z-index: -100;
 }
 
 .pdf-template {
   background: white !important;
   color: #000 !important;
-  padding: 10mm;
-  font-family: 'Times New Roman', Times, serif;
-  width: 210mm; /* A4 width approx */
+
+  width: 210mm;
   min-height: 297mm;
+
+  padding: 12mm 18mm 12mm 18mm;
+
   box-sizing: border-box;
+
+  font-family: "Times New Roman", Times, serif;
+
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .pdf-template * {
@@ -501,18 +592,56 @@ watch(ujianId, (newVal) => {
   margin: 0 0 8px 0;
 }
 
-.pdf-qa-body {
-  font-size: 11pt;
-  line-height: 1.5;
-  padding-left: 10px;
-  border-left: 2px solid #ccc;
+.pdf-qa-body{
+
+    font-size:11pt;
+
+    line-height:1.7;
+
+    max-width: 98%;
+
+    border-left:2px solid #ccc;
+
+    padding: 4px 24px 3px 16px;
+
+    box-sizing:border-box;
 }
 
-.pdf-qa-body p {
-  margin: 0 0 10px 0;
+.pdf-block{
+
+    margin-bottom:14px;
+
 }
 
-.pdf-qa-body p:last-child {
-  margin-bottom: 0;
+.pdf-block:last-child{
+
+    margin-bottom:0;
+
+}
+
+.pdf-label{
+
+    font-weight:bold;
+
+    margin-bottom:5px;
+
+}
+
+.pdf-text{
+
+    padding:4px 4px 3px 3px;
+
+    text-align:justify;
+
+    line-height:1.7;
+
+    overflow-wrap:anywhere;
+
+    word-break:break-word;
+
+    white-space:pre-wrap;
+
+    box-sizing:border-box;
+
 }
 </style>
