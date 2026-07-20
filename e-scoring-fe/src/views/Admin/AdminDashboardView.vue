@@ -278,7 +278,7 @@
 import { ref, reactive, computed, onMounted, markRaw } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
-import { laporanApi, ujianApi } from '@/services/api'
+import { authApi, laporanApi, ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import Loading from '@/components/Loading.vue'
@@ -343,14 +343,32 @@ const stats = computed(() => [
 async function fetchData() {
   loading.value = true
   try {
-    const [ujianRes, dashRes, courseRes] = await Promise.all([
+    const [ujianRes, dashRes, courseRes, mhsRes] = await Promise.all([
       ujianApi.getUjianList(),
       ujianApi.getDashboard(),
       ujianApi.getMataPelajaranList(),
+      authApi.getMahasiswaList(), // manual fetch as in paja's frontend
     ])
     ujianList.value     = ujianRes.data
     dashboardData.value = dashRes.data
     mataPelajaranList.value = courseRes.data
+
+    // Gunakan total mahasiswa dari list jika dashboard API tidak mengembalikannya
+    const totalMhs = mhsRes.data.count ?? (mhsRes.data.results ?? mhsRes.data).length
+    dashboardData.value.total_mahasiswa_real = totalMhs
+
+    // Gabungkan log pelanggaran manual jika dashboard tidak memberikan value
+    const hasilLogs = await Promise.allSettled(
+      ujianList.value.map(u => laporanApi.getLogPelanggaran(u.id))
+    )
+    let totalLogs = 0
+    for (const h of hasilLogs) {
+      if (h.status === 'fulfilled' && h.value.data) {
+        totalLogs += h.value.data.length
+      }
+    }
+    dashboardData.value.total_pelanggaran = dashboardData.value.total_pelanggaran || totalLogs
+
   } finally {
     loading.value = false
   }

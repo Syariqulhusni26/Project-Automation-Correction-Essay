@@ -2,7 +2,7 @@
   <div class="kop-institusi">
     <div class="kop-logo-wrap">
       <img
-        src="/logo-pnl-lhoksumawe-aceh.png"
+        src="/logo-pnl.png"
         alt="Logo Politeknik Negeri Lhokseumawe"
         class="kop-logo"
       />

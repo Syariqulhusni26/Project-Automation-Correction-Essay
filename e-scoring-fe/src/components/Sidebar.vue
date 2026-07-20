@@ -110,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive, shallowRef } from 'vue'
+import { ref, computed, onMounted, reactive, shallowRef, markRaw } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
@@ -133,10 +133,10 @@ const openDropdowns = reactive({
 })
 
 const navItems = computed(() => [
-  { name: 'AdminDashboard', label: 'Dashboard',       icon: shallowRef(Home),        to: { name: 'AdminDashboard' } },
-  { name: 'AdminStudent',   label: 'Manajemen User',  icon: shallowRef(Users),       to: { name: 'AdminStudent'   } },
-  { name: 'AdminScore',     label: 'Nilai',           icon: shallowRef(BarChart2),   to: { name: 'AdminScore', params: { ujianId: 0 } } },
-  { name: 'AdminLogs',      label: 'Log Pelanggaran', icon: shallowRef(ShieldAlert), to: { name: 'AdminLogs', params: { ujianId: 0 } }, badge: totalLogs.value },
+  { name: 'AdminDashboard', label: 'Dashboard',       icon: markRaw(Home),        to: { name: 'AdminDashboard' } },
+  { name: 'AdminStudent',   label: 'Manajemen User',  icon: markRaw(Users),       to: { name: 'AdminStudent'   } },
+  { name: 'AdminScore',     label: 'Nilai',           icon: markRaw(BarChart2),   to: { name: 'AdminScore', params: { ujianId: 0 } } },
+  { name: 'AdminLogs',      label: 'Log Pelanggaran', icon: markRaw(ShieldAlert), to: { name: 'AdminLogs', params: { ujianId: 0 } }, badge: totalLogs.value },
 ])
 
 const isActive = item => {

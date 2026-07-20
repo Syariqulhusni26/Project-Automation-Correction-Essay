@@ -57,6 +57,8 @@ export const authApi = {
   login:          payload  => api.post('/auth/login/', payload),
   logout:         payload  => api.post('/auth/logout/', payload),
   getProfile:     ()       => api.get('/auth/profile/'),
+  getMahasiswa:   ()       => api.get('/auth/mahasiswa/'),
+
 
   // Manajemen Mahasiswa (Dosen Only)
   getMahasiswaList:      ()            => api.get('/auth/mahasiswa/'),

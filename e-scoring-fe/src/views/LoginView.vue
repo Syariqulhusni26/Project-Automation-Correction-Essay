@@ -16,10 +16,10 @@
 
         <!-- Logo SAGE -->
         <div class="login-logo">
-          <Zap class="logo-icon icon-pulse" size="32" style="color: var(--color-accent-400);" />
+          <img src="/logo-pnl.png" alt="PNL Logo" class="logo-icon icon-pulse" style="width: 48px; height: 48px; object-fit: contain;" />
           <h1 class="logo-text">SAGE</h1>
         </div>
-        <p class="login-subtitle">Smart Automated Grade For Essay</p>
+        <p class="login-subtitle">Smart Automation Grading for Essay</p>
         <p class="login-desc">Sistem Ujian Esai Otomatis Berbasis AI</p>
 
         <!-- Form -->
