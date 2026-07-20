@@ -662,19 +662,58 @@ tbody tr:hover {
    Responsive Mobile Media Queries
    =================================================== */
 @media (max-width: 768px) {
-  .admin-layout, .page-layout { flex-direction: column; }
-  .sidebar { width: 100% !important; height: auto !important; position: static !important; border-right: none !important; border-bottom: 1px solid var(--color-border); }
-  .sidebar-nav { display: flex; overflow-x: auto; padding: 0.5rem; gap: 0.5rem; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
-  .nav-item { padding: 0.5rem; justify-content: center; flex: 0 0 auto; }
-  .nav-label, .auth-section, #btn-toggle-sidebar { display: none !important; }
-  .sidebar-header { height: auto; padding: 0.75rem; }
-  .brand-text { display: flex !important; }
-  .sidebar-footer { flex-direction: row; justify-content: space-between; padding: 0.75rem; }
+  body { overflow-x: hidden; }
+  .page-layout { flex-direction: column; }
+  
+  /* Sidebar Drawer */
+  .sidebar { 
+    position: fixed !important; 
+    left: -280px !important;
+    top: 0 !important; 
+    bottom: 0 !important; 
+    width: 260px !important; 
+    height: 100vh !important; 
+    z-index: 1000 !important; 
+    transition: left 0.3s ease !important; 
+    border-right: 1px solid var(--color-border) !important;
+  }
+  
+  body.mobile-sidebar-open .sidebar {
+    left: 0 !important;
+  }
+
+  .sidebar-backdrop {
+    display: none;
+  }
+
+  /* Backdrop */
+  body.mobile-sidebar-open .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 999;
+  }
+
+  .sidebar-nav { display: flex; flex-direction: column; overflow-y: auto; padding: 1rem; gap: 0.5rem; }
+  .nav-item { justify-content: flex-start; padding: 0.75rem 1rem; }
+  .nav-label { display: block !important; }
+  .sidebar-header { height: 64px; padding: var(--space-4); }
+  .sidebar-footer { flex-direction: row; align-items: center; justify-content: space-between; padding: var(--space-4); }
+  #btn-toggle-sidebar { display: none !important; }
+  
   .stats-grid, .ujian-grid { grid-template-columns: 1fr !important; }
   .form-row { flex-direction: column; }
   .table-wrapper { overflow-x: auto; display: block; width: 100%; }
-  .navbar { padding: 0.75rem; flex-direction: column; gap: 0.75rem; align-items: flex-start; }
-  .nav-actions { width: 100%; justify-content: space-between; }
+  
+  /* Stack headers */
+  .section-header { flex-direction: column; align-items: stretch; gap: var(--space-3); }
+  .header-actions { flex-direction: column; width: 100%; }
+  .header-actions .btn { width: 100%; justify-content: center; }
+
+  .navbar { padding: 0.5rem 0.75rem; }
+  .navbar-inner { height: auto; min-height: 48px; }
   .login-container { padding: 0.75rem; }
   .login-card { padding: 1rem !important; }
 }
+</style>

@@ -8,7 +8,11 @@
     - Toggle dark/light mode
     - Tombol logout (blacklist token ke backend)
   -->
+  <!-- Mobile Backdrop -->
+  <div class="sidebar-backdrop" @click="closeMobileSidebar"></div>
+
   <aside class="sidebar" :class="['sidebar', { 'sidebar--collapsed': collapsed }]">
+    
     <!-- Header Brand -->
     <div class="sidebar-header">
       <img src="/logo-pnl.png" alt="PNL" class="brand-logo" />
@@ -141,6 +145,10 @@ const navItems = computed(() => [
   { name: 'AdminScore',     label: 'Nilai',           icon: markRaw(BarChart2),   to: { name: 'AdminScore', params: { ujianId: 0 } } },
   { name: 'AdminLogs',      label: 'Log Pelanggaran', icon: markRaw(ShieldAlert), to: { name: 'AdminLogs', params: { ujianId: 0 } }, badge: totalLogs.value },
 ])
+
+const closeMobileSidebar = () => {
+  document.body.classList.remove('mobile-sidebar-open')
+}
 
 const isActive = item => {
   return route.name === item.name || route.name?.startsWith(item.name)

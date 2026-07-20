@@ -53,8 +53,8 @@
             <!-- Status Badge -->
             <div class="ujian-card-header">
               <StatusBadge
-                :status="ujian.status_sesi === 'selesai' ? 'neutral' : (ujian.status_sesi === 'berlangsung' ? 'warning' : 'success')"
-                :label="ujian.status_sesi === 'selesai' ? 'Selesai' : (ujian.status_sesi === 'berlangsung' ? 'Berlangsung' : 'Tersedia')"
+                :status="ujian.status_sesi === 'pelanggaran' ? 'danger' : (ujian.status_sesi === 'selesai' ? 'neutral' : (ujian.status_sesi === 'berlangsung' ? 'warning' : 'success'))"
+                :label="ujian.status_sesi === 'pelanggaran' ? 'Pelanggaran' : (ujian.status_sesi === 'selesai' ? 'Selesai' : (ujian.status_sesi === 'berlangsung' ? 'Berlangsung' : 'Tersedia'))"
               />
               <span class="text-muted text-xs">{{ ujian.mata_pelajaran?.kode }}</span>
             </div>
@@ -84,7 +84,15 @@
 
             <!-- CTA Button -->
             <button
-              v-if="ujian.status_sesi !== 'selesai'"
+              v-if="ujian.status_sesi === 'pelanggaran'"
+              class="btn w-full btn-danger"
+              style="opacity: 0.8; cursor: not-allowed;"
+              disabled
+            >
+              <XCircle size="15" style="margin-right:6px;" /> Dihentikan (Pelanggaran)
+            </button>
+            <button
+              v-else-if="ujian.status_sesi !== 'selesai'"
               :id="`btn-mulai-ujian-${ujian.id}`"
               class="btn w-full icon-slide btn-primary"
               @click="mulaiUjian(ujian)"
@@ -119,7 +127,7 @@ import { ujianApi } from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 import Loading from '@/components/Loading.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { Hand, Inbox, RefreshCw, Timer, FileText, CalendarDays, History, PlayCircle, Rocket } from 'lucide-vue-next'
+import { Hand, Inbox, RefreshCw, Timer, FileText, CalendarDays, History, PlayCircle, Rocket, XCircle } from 'lucide-vue-next'
 
 const auth     = useAuthStore()
 const router   = useRouter()

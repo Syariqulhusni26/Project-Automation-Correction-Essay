@@ -6,14 +6,21 @@
   -->
   <nav class="navbar">
     <div class="navbar-inner">
-      <!-- Logo & Brand -->
-      <router-link :to="brandLink" class="navbar-brand">
-        <Zap class="brand-icon icon-pulse" size="22" />
-        <span class="brand-name">SAGE</span>
-      </router-link>
+      <div class="navbar-left">
+        <!-- Hamburger Menu (Mobile Only) -->
+        <button class="mobile-menu-btn" @click="toggleMobileSidebar" v-if="auth.isDosen">
+          <Menu size="24" />
+        </button>
+
+        <!-- Logo & Brand -->
+        <router-link :to="brandLink" class="navbar-brand">
+          <img src="/logo-pnl.png" alt="PNL" class="brand-logo-nav" />
+          <span class="brand-name">SAGE</span>
+        </router-link>
+      </div>
 
       <!-- Right Side -->
-      <div class="navbar-right">
+      <div class="navbar-right" :class="{ 'dosen-mobile-hide': auth.isDosen }">
         <div class="user-chip">
           <div class="user-avatar">{{ userInitial }}</div>
           <div class="user-info">
@@ -39,7 +46,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { Zap, LogOut } from 'lucide-vue-next'
+import { LogOut, Menu } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const loggingOut = ref(false)
@@ -61,6 +68,10 @@ async function handleLogout() {
   loggingOut.value = true
   await auth.logout()
   loggingOut.value = false
+}
+
+function toggleMobileSidebar() {
+  document.body.classList.toggle('mobile-sidebar-open')
 }
 </script>
 
@@ -105,6 +116,27 @@ async function handleLogout() {
   background-clip: text;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.brand-logo-nav {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .navbar-right {
   display: flex;
   align-items: center;
@@ -146,5 +178,20 @@ async function handleLogout() {
 .user-role {
   font-size: 0.72rem;
   color: var(--color-text-muted);
+}
+
+/* ===================================================
+   Responsive Mobile Media Queries
+   =================================================== */
+@media (max-width: 768px) {
+  .user-chip {
+    display: none !important;
+  }
+  .navbar-right.dosen-mobile-hide {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
 }
 </style>
