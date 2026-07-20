@@ -17,13 +17,8 @@ import openpyxl
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
-import os
-from django.conf import settings
 
 from .models import User
 from .serializers import UserPublicSerializer, MahasiswaListSerializer, DosenListSerializer
@@ -139,35 +134,6 @@ class MahasiswaListView(APIView):
             qs = qs.filter(kelas=kelas)
         return Response(MahasiswaListSerializer(qs, many=True).data)
 
-    def post(self, request):
-        if not request.user.is_dosen:
-            return Response({'detail': 'Akses ditolak.'}, status=403)
-        
-        nama_lengkap = request.data.get('nama_lengkap', '').strip()
-        nim = request.data.get('nim', '').strip()
-        kelas = request.data.get('kelas', '').strip()
-        password = request.data.get('password', '').strip()
-
-        if not nama_lengkap or not nim:
-            return Response({'detail': 'Nama lengkap dan NIM wajib diisi.'}, status=400)
-
-        if User.objects.filter(nim=nim).exists() or User.objects.filter(username=nim).exists():
-            return Response({'detail': f"NIM atau Username '{nim}' sudah digunakan."}, status=400)
-
-        if not password:
-            password = _generate_password()
-
-        user = User.objects.create_user(
-            username=nim,
-            password=password,
-            nama_lengkap=nama_lengkap,
-            nim=nim,
-            kelas=kelas,
-            role=User.ROLE_MAHASISWA,
-            plain_password=password,
-        )
-        return Response(MahasiswaListSerializer(user).data, status=201)
-
 
 class ImportMahasiswaView(APIView):
     """
@@ -240,70 +206,12 @@ class ExportKartuUjianView(APIView):
             qs = qs.filter(kelas=kelas_filter)
 
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*cm, bottomMargin=2*cm, leftMargin=1.5*cm, rightMargin=1.5*cm)
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=2*cm, bottomMargin=2*cm)
         styles = getSampleStyleSheet()
         elements = []
 
-        # --- STYLE UNTUK KOP SURAT (Times New Roman) ---
-        kop_title_style = ParagraphStyle(
-            'KopTitle',
-            parent=styles['Normal'],
-            fontName='Times-Roman',
-            fontSize=14,
-            leading=16,
-            alignment=TA_CENTER,
-            spaceAfter=2,
-            spaceBefore=0
-        )
-        kop_subtitle_style = ParagraphStyle(
-            'KopSubtitle',
-            parent=styles['Normal'],
-            fontName='Times-Bold',
-            fontSize=16,
-            leading=18,
-            alignment=TA_CENTER,
-            spaceAfter=4
-        )
-        kop_text_style = ParagraphStyle(
-            'KopText',
-            parent=styles['Normal'],
-            fontName='Times-Roman',
-            fontSize=12,
-            leading=14,
-            alignment=TA_CENTER,
-            spaceAfter=0
-        )
-
-        # --- MEMBUAT KOP SURAT ---
-        logo_path = os.path.join(settings.BASE_DIR, 'static', 'logo_pnl.png')
-        logo_image = ''
-        if os.path.exists(logo_path):
-            logo_image = Image(logo_path, width=2.5*cm, height=2.5*cm)
-        
-        kop_text = [
-            Paragraph("KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI", kop_title_style),
-            Paragraph("POLITEKNIK NEGERI LHOKSEUMAWE", kop_subtitle_style),
-            Paragraph("JURUSAN TEKNOLOGI INFORMASI DAN KOMPUTER", kop_subtitle_style),
-            Paragraph("Jalan Banda Aceh-Medan Km. 280, Buketrata – Lhokseumawe 24301 PO.BOX 90", kop_text_style),
-            Paragraph("Telp/Fax. (0645) 42785. Laman : www.pnl.ac.id", kop_text_style),
-        ]
-
-        kop_table_data = [[logo_image, kop_text]]
-        kop_table = Table(kop_table_data, colWidths=[3*cm, 15*cm])
-        kop_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-            ('LINEBELOW', (0, 0), (-1, -1), 1.5, colors.black),
-        ]))
-
-        elements.append(kop_table)
-        elements.append(Spacer(1, 1*cm))
-
-        # --- JUDUL DOKUMEN ---
-        title_style = ParagraphStyle('title', parent=styles['Heading1'], fontName='Times-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=20)
-        elements.append(Paragraph("KARTU LOGIN UJIAN MAHASISWA", title_style))
+        title_style = ParagraphStyle('title', parent=styles['Heading1'], alignment=1, spaceAfter=20)
+        elements.append(Paragraph("Kartu Ujian Mahasiswa", title_style))
         if kelas_filter:
             elements.append(Paragraph(f"Kelas: {kelas_filter}", styles['Normal']))
         elements.append(Spacer(1, 0.5*cm))
@@ -357,44 +265,6 @@ class UnlockMahasiswaView(APIView):
 class HapusMahasiswaView(APIView):
     """DELETE /api/v1/auth/mahasiswa/<pk>/ — Hapus akun mahasiswa."""
     permission_classes = [IsAuthenticated]
-
-    def put(self, request, pk):
-        return self._update_mahasiswa(request, pk)
-
-    def post(self, request, pk):
-        return self._update_mahasiswa(request, pk)
-
-    def _update_mahasiswa(self, request, pk):
-        if not request.user.is_dosen:
-            return Response({'detail': 'Akses ditolak.'}, status=403)
-        try:
-            mhs = User.objects.get(pk=pk, role=User.ROLE_MAHASISWA)
-        except User.DoesNotExist:
-            return Response({'detail': 'Mahasiswa tidak ditemukan.'}, status=404)
-
-        nama_lengkap = request.data.get('nama_lengkap', '').strip()
-        nim = request.data.get('nim', '').strip()
-        kelas = request.data.get('kelas', '').strip()
-        password = request.data.get('password', '').strip()
-
-        if not nama_lengkap or not nim:
-            return Response({'detail': 'Nama lengkap dan NIM wajib diisi.'}, status=400)
-
-        # Cek apakah NIM baru sudah digunakan oleh user lain
-        if User.objects.filter(nim=nim).exclude(pk=pk).exists() or User.objects.filter(username=nim).exclude(pk=pk).exists():
-            return Response({'detail': f"NIM atau Username '{nim}' sudah digunakan oleh pengguna lain."}, status=400)
-
-        mhs.nama_lengkap = nama_lengkap
-        mhs.nim = nim
-        mhs.username = nim  # Username disamakan dengan NIM
-        mhs.kelas = kelas
-
-        if password:
-            mhs.set_password(password)
-            mhs.plain_password = password
-
-        mhs.save()
-        return Response(MahasiswaListSerializer(mhs).data)
 
     def delete(self, request, pk):
         if not request.user.is_dosen:

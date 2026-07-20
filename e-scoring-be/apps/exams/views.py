@@ -31,10 +31,6 @@ class DashboardDosenView(APIView):
     @require_dosen
     def get(self, request):
         from apps.submissions.models import SesiUjian
-        from apps.reports.models import PelanggaranLog
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        
         ujian_qs = Ujian.objects.filter(mata_pelajaran__dosen=request.user)
         return Response({
             'total_ujian': ujian_qs.count(),
@@ -42,8 +38,6 @@ class DashboardDosenView(APIView):
             'ujian_aktif': ujian_qs.filter(status=Ujian.STATUS_AKTIF).count(),
             'ujian_selesai': ujian_qs.filter(status=Ujian.STATUS_SELESAI).count(),
             'total_peserta': SesiUjian.objects.filter(ujian__mata_pelajaran__dosen=request.user).count(),
-            'total_mahasiswa_real': User.objects.filter(role=User.ROLE_MAHASISWA).count(),
-            'total_pelanggaran': PelanggaranLog.objects.filter(sesi__ujian__mata_pelajaran__dosen=request.user).count(),
             'ujian_terbaru': UjianSerializer(ujian_qs.order_by('-created_at')[:5], many=True).data,
         })
 

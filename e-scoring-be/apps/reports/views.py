@@ -11,13 +11,8 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
-import os
-from django.conf import settings
 
 from apps.exams.models import Ujian
 from apps.submissions.models import SesiUjian, Jawaban
@@ -189,68 +184,14 @@ class ExportPDFMahasiswaView(APIView):
         styles = getSampleStyleSheet()
         el = []
 
-        # --- STYLE UNTUK KOP SURAT (Times New Roman) ---
-        kop_title_style = ParagraphStyle(
-            'KopTitle',
-            parent=styles['Normal'],
-            fontName='Times-Roman',
-            fontSize=14,
-            leading=16,
-            alignment=TA_CENTER,
-            spaceAfter=2,
-            spaceBefore=0
-        )
-        kop_subtitle_style = ParagraphStyle(
-            'KopSubtitle',
-            parent=styles['Normal'],
-            fontName='Times-Bold',
-            fontSize=16,
-            leading=18,
-            alignment=TA_CENTER,
-            spaceAfter=4
-        )
-        kop_text_style = ParagraphStyle(
-            'KopText',
-            parent=styles['Normal'],
-            fontName='Times-Roman',
-            fontSize=12,
-            leading=14,
-            alignment=TA_CENTER,
-            spaceAfter=0
-        )
-
-        # --- MEMBUAT KOP SURAT ---
-        logo_path = os.path.join(settings.BASE_DIR, 'static', 'logo_pnl.png')
-        logo_image = ''
-        if os.path.exists(logo_path):
-            logo_image = Image(logo_path, width=2.5*cm, height=2.5*cm)
-        
-        kop_text = [
-            Paragraph("KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI", kop_title_style),
-            Paragraph("POLITEKNIK NEGERI LHOKSEUMAWE", kop_subtitle_style),
-            Paragraph("JURUSAN TEKNOLOGI INFORMASI DAN KOMPUTER", kop_subtitle_style),
-            Paragraph("Jalan Banda Aceh-Medan Km. 280, Buketrata – Lhokseumawe 24301 PO.BOX 90", kop_text_style),
-            Paragraph("Telp/Fax. (0645) 42785. Laman : www.pnl.ac.id", kop_text_style),
-        ]
-
-        kop_table_data = [[logo_image, kop_text]]
-        kop_table = Table(kop_table_data, colWidths=[3*cm, 15*cm])
-        kop_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-            ('LINEBELOW', (0, 0), (-1, -1), 1.5, colors.black),
-        ]))
-
-        el.append(kop_table)
-        el.append(Spacer(1, 1*cm))
-
-        title_s = ParagraphStyle('t', parent=styles['Heading1'], fontName='Times-Bold', alignment=TA_CENTER, fontSize=14, spaceAfter=8)
-        sub_s = ParagraphStyle('s', parent=styles['Normal'], fontName='Times-Roman', alignment=TA_CENTER, fontSize=12, spaceAfter=4)
+        title_s = ParagraphStyle('t', parent=styles['Heading1'], alignment=1,
+                                 textColor=colors.HexColor('#1e3a5f'), spaceAfter=8)
+        sub_s = ParagraphStyle('s', parent=styles['Normal'], alignment=1,
+                               textColor=colors.HexColor('#555'), spaceAfter=4)
         el.append(Paragraph("LAPORAN HASIL UJIAN ESAI", title_s))
         el.append(Paragraph(sesi.ujian.judul, sub_s))
         el.append(Paragraph(sesi.ujian.mata_pelajaran.nama, sub_s))
+        el.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#1e3a5f')))
         el.append(Spacer(1, 0.4*cm))
 
         info = [

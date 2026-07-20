@@ -11,8 +11,11 @@
   <aside class="sidebar" :class="['sidebar', { 'sidebar--collapsed': collapsed }]">
     <!-- Header Brand -->
     <div class="sidebar-header">
-      <Zap class="brand-icon icon-pulse" size="22" style="color: var(--color-accent-400); flex-shrink: 0;" />
-      <span class="brand-name" v-if="!collapsed">E-Scoring</span>
+      <img src="/logo-pnl.png" alt="PNL" class="brand-logo" />
+      <div class="brand-text-wrap" v-if="!collapsed">
+        <span class="brand-name">SAGE</span>
+        <span class="brand-tagline">Smart Automation Grading Essay</span>
+      </div>
       <button
         id="btn-toggle-sidebar"
         class="toggle-btn"
@@ -214,7 +217,21 @@ async function handleLogout() {
   height: 64px;
 }
 
-.brand-icon { font-size: 1.4rem; }
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.brand-text-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
 
 .brand-name {
   font-size: 1.1rem;
@@ -223,9 +240,18 @@ async function handleLogout() {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  flex: 1;
-  overflow: hidden;
   white-space: nowrap;
+  line-height: 1.2;
+}
+
+.brand-tagline {
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  margin-top: 1px;
 }
 
 .toggle-btn {

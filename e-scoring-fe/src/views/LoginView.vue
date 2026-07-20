@@ -16,11 +16,11 @@
 
         <!-- Logo SAGE -->
         <div class="login-logo">
-          <img src="/logo-pnl.png" alt="PNL Logo" class="logo-icon icon-pulse" style="width: 48px; height: 48px; object-fit: contain;" />
+          <img src="/logo-pnl.png" alt="PNL Logo" class="logo-pnl-img" />
           <h1 class="logo-text">SAGE</h1>
         </div>
         <p class="login-subtitle">Smart Automation Grading for Essay</p>
-        <p class="login-desc">Sistem Ujian Esai Otomatis Berbasis AI</p>
+        <p class="login-desc">Sistem Penilaian Esai Otomatis Berbasis AI — PNL</p>
 
         <!-- Form -->
         <form id="form-login" @submit.prevent="handleLogin" novalidate>
@@ -209,7 +209,11 @@ async function handleLogin() {
   gap: var(--space-2);
 }
 
-.logo-icon { font-size: 2.5rem; }
+.logo-pnl-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
 
 .logo-text {
   font-size: 2rem;
