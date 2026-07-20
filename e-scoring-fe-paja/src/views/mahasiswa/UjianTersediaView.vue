@@ -84,9 +84,16 @@ onMounted(load)
               >
                 <i class="bi bi-check-circle me-1"></i>Lihat Hasil
               </button>
-              <button v-else class="btn btn-outline-danger w-100" disabled>
-                <i class="bi bi-x-circle me-1"></i>Dihentikan (Pelanggaran)
-              </button>
+              <template v-else>
+                <!-- Tetap bisa diklik: kalau dosen sudah membuka kunci, sesi bisa dilanjutkan;
+                     kalau masih terkunci, backend menolak dan layar pelanggaran tampil -->
+                <button class="btn btn-outline-danger w-100" @click="kerjakan(u)">
+                  <i class="bi bi-unlock me-1"></i>Dihentikan — Coba Lanjutkan
+                </button>
+                <div class="form-text text-center mt-1">
+                  Bisa dilanjutkan setelah dosen membuka kunci akun Anda.
+                </div>
+              </template>
             </div>
           </div>
         </div>

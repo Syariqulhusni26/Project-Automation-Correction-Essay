@@ -274,8 +274,8 @@ onMounted(load)
               </td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm">
-                  <button v-if="m.is_exam_locked" class="btn btn-outline-warning" title="Buka kunci" @click="unlock(m)">
-                    <i class="bi bi-unlock"></i>
+                  <button v-if="m.is_exam_locked" class="btn btn-warning fw-semibold" title="Buka kunci akun" @click="unlock(m)">
+                    <i class="bi bi-unlock-fill me-1"></i>Buka Kunci
                   </button>
                   <button class="btn btn-outline-danger" title="Hapus" @click="hapus(m)">
                     <i class="bi bi-trash"></i>

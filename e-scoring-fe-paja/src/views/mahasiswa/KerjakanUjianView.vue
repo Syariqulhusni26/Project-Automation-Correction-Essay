@@ -67,6 +67,12 @@ async function mulai() {
     sesiId.value = data.sesi_id
     sisaDetik.value = data.sisa_detik
 
+    // Server mengizinkan masuk padahal hitungan lokal sudah lewat batas
+    // → akun baru dibuka kunci oleh dosen; beri jatah peringatan baru
+    if (jumlahPelanggaran() > MAX_PERINGATAN) {
+      sessionStorage.setItem(`aes_warn_${sesiId.value}`, '0')
+    }
+
     const detail = await client.get(`/submission/sesi/${sesiId.value}/`)
     sesi.value = detail.data
     sisaDetik.value = detail.data.sisa_detik
@@ -373,11 +379,6 @@ onMounted(() => {})
                   @click="pindahSoal(idx)"
                 >{{ s.soal_nomor }}</button>
               </div>
-              <hr />
-              <button class="btn btn-danger w-100 btn-sm" :disabled="phase === 'submitting'" @click="mintaSubmit">
-                <span v-if="phase === 'submitting'" class="spinner-border spinner-border-sm me-1"></span>
-                <i class="bi bi-send me-1"></i>Submit Ujian
-              </button>
             </div>
           </div>
         </div>
@@ -416,13 +417,19 @@ onMounted(() => {})
                 >
                   <i class="bi bi-chevron-left me-1"></i>Sebelumnya
                 </button>
-                <button
-                  class="btn btn-outline-primary"
-                  :disabled="currentIdx === soalList.length - 1"
-                  @click="pindahSoal(currentIdx + 1)"
-                >
-                  Berikutnya<i class="bi bi-chevron-right ms-1"></i>
-                </button>
+                <div class="d-flex gap-2">
+                  <button
+                    class="btn btn-outline-primary"
+                    :disabled="currentIdx === soalList.length - 1"
+                    @click="pindahSoal(currentIdx + 1)"
+                  >
+                    Berikutnya<i class="bi bi-chevron-right ms-1"></i>
+                  </button>
+                  <button class="btn btn-danger fw-semibold" :disabled="phase === 'submitting'" @click="mintaSubmit">
+                    <span v-if="phase === 'submitting'" class="spinner-border spinner-border-sm me-1"></span>
+                    <i class="bi bi-send me-1"></i>Submit Ujian
+                  </button>
+                </div>
               </div>
             </div>
           </div>
